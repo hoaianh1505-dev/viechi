@@ -3,6 +3,7 @@ import { UserProvider } from '@/context/UserContext';
 import { CartProvider } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
 import CartDrawer from '@/components/CartDrawer';
+import { Toaster } from 'react-hot-toast';
 import './globals.css';
 import './App.css';
 
@@ -13,8 +14,9 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="vi" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <Toaster position="top-center" reverseOrder={false} />
         <UserProvider>
         <ProductProvider>
           <CartProvider>

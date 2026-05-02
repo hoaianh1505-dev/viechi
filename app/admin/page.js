@@ -3,10 +3,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useProducts } from '@/context/ProductContext';
-import { Plus, Edit2, Trash2, X, Save, Upload, ImageOff, Package, LayoutDashboard, Fish, ShoppingBag, Truck, CheckCircle, Clock } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
+import { Plus, Edit2, Trash2, X, Save, Upload, ImageOff, Package, LayoutDashboard, Fish, ShoppingBag, Truck, CheckCircle, Clock, MapPin, DollarSign } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import Swal from 'sweetalert2';
 
-// ===== Upload image to server =====
+// ===== Upload functions (Server side API) =====
 const uploadToServer = async (file) => {
   const fd = new FormData();
   fd.append('image', file);
@@ -14,15 +17,6 @@ const uploadToServer = async (file) => {
   if (!res.ok) throw new Error('Upload thất bại');
   const data = await res.json();
   return data.url;
-};
-
-const uploadMultipleToServer = async (files) => {
-  const fd = new FormData();
-  files.forEach(f => fd.append('images', f));
-  const res = await fetch('/api/upload/multiple', { method: 'POST', body: fd });
-  if (!res.ok) throw new Error('Upload thất bại');
-  const data = await res.json();
-  return data.urls;
 };
 
 // ===== ImageUploader component =====
@@ -57,7 +51,7 @@ const ImageUploader = ({ value, onChange, label = 'Ảnh chính', required = fal
 const ProductModal = ({ editing, onClose, onSave }) => {
   const [form, setForm] = useState(editing || { name: '', price: '', description: '', image: '', gallery: [], category: '', unit: 'kg' });
   const f = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
-  const handleSubmit = e => { e.preventDefault(); onSave({ ...form, price: Number(form.price), gallery: Array.isArray(form.gallery) ? form.gallery : [] }); };
+  const handleSubmit = e => { e.preventDefault(); onSave({ ...form, price: Number(form.price) }); };
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(28,15,6,0.45)', backdropFilter: 'blur(6px)' }} />
@@ -86,27 +80,46 @@ const ProductModal = ({ editing, onClose, onSave }) => {
 
 // ===== MAIN DASHBOARD =====
 export default function AdminDashboard() {
-  const { products, banners, isAdmin, addProduct, updateProduct, deleteProduct, getId, loading, serverOnline } = useProducts();
+  const { products, banners, addProduct, updateProduct, deleteProduct, getId, loading: productLoading } = useProducts();
+  const { user, isAdmin, loading: authLoading } = useUser();
   const [tab, setTab] = useState('products');
   const [orders, setOrders] = useState([]);
+  const [shippingFees, setShippingFees] = useState([]);
+  const [apiProvinces, setApiProvinces] = useState([]); // Provinces from API
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [newFee, setNewFee] = useState({ province: '', fee: '' });
   const router = useRouter();
 
   useEffect(() => {
-    if (tab === 'orders') {
-      fetch('/api/orders').then(res => res.json()).then(data => setOrders(Array.isArray(data) ? data : []));
+    if (tab === 'orders') fetchOrders();
+    if (tab === 'shipping') {
+      fetchShipping();
+      fetch('https://provinces.open-api.vn/api/p/')
+        .then(res => res.json())
+        .then(data => {
+          setApiProvinces(data);
+          if (data.length > 0) setNewFee(prev => ({ ...prev, province: data[0].name }));
+        });
     }
   }, [tab]);
 
-  if (loading) return <div style={{ padding: '8rem', textAlign: 'center' }}>Đang tải...</div>;
-  if (!isAdmin) return null;
+  const fetchOrders = () => fetch('/api/orders').then(res => res.json()).then(data => setOrders(Array.isArray(data) ? data : []));
+  const fetchShipping = () => fetch('/api/shipping').then(res => res.json()).then(data => setShippingFees(Array.isArray(data) ? data : []));
 
-  const TABS = [
-    { key: 'products', label: 'Sản phẩm', icon: Package, count: products.length },
-    { key: 'orders',   label: 'Đơn hàng',  icon: ShoppingBag, count: orders.length },
-    { key: 'banners',  label: 'Banner',    icon: Fish,    count: banners.length },
-  ];
+  // Redirect if not admin after loading
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login');
+      } else if (!isAdmin) {
+        router.push('/');
+      }
+    }
+  }, [authLoading, user, isAdmin, router]);
+
+  if (authLoading || productLoading) return <div style={{ padding: '8rem', textAlign: 'center' }}>Đang tải...</div>;
+  if (!isAdmin) return null;
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
@@ -117,11 +130,83 @@ export default function AdminDashboard() {
       });
       if (res.ok) {
         setOrders(orders.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
+        toast.success('Đã cập nhật trạng thái!');
+      } else {
+        const err = await res.json();
+        toast.error(err.error || 'Lỗi cập nhật');
       }
     } catch (e) {
-      alert('Lỗi cập nhật trạng thái');
+      toast.error('Lỗi kết nối server');
     }
   };
+
+  const deleteOrder = async (orderId) => {
+    const result = await Swal.fire({
+      title: 'Xác nhận xóa?',
+      text: "Đơn hàng sẽ bị xóa vĩnh viễn khỏi hệ thống!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: 'var(--primary)',
+      cancelButtonColor: 'var(--text-muted)',
+      confirmButtonText: 'Đồng ý xóa',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE' });
+        if (res.ok) {
+          setOrders(orders.filter(o => o._id !== orderId));
+          toast.success('Đã xóa đơn hàng thành công');
+        }
+      } catch (e) {
+        toast.error('Lỗi xóa đơn hàng');
+      }
+    }
+  };
+
+  const handleSaveShipping = async () => {
+    if (!newFee.fee || !newFee.province) return;
+    const res = await fetch('/api/shipping', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newFee)
+    });
+    if (res.ok) {
+      fetchShipping();
+      setNewFee({ ...newFee, fee: '' });
+      toast.success('Đã cập nhật phí ship!');
+    }
+  };
+
+  const deleteShippingFee = async (feeId) => {
+    const result = await Swal.fire({
+      title: 'Xác nhận xóa phí ship?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: 'var(--primary)',
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await fetch(`/api/shipping/${feeId}`, { method: 'DELETE' });
+        if (res.ok) {
+          setShippingFees(shippingFees.filter(f => f._id !== feeId));
+          toast.success('Đã xóa phí ship');
+        }
+      } catch (e) {
+        toast.error('Lỗi xóa phí ship');
+      }
+    }
+  };
+
+  const TABS = [
+    { key: 'products', label: 'Sản phẩm', icon: Package, count: products.length },
+    { key: 'orders',   label: 'Đơn hàng',  icon: ShoppingBag, count: orders.length },
+    { key: 'shipping', label: 'Phí ship',  icon: Truck,    count: shippingFees.length },
+  ];
 
   return (
     <div style={{ background: 'var(--bg-section)', minHeight: '90vh', padding: '2rem 0' }}>
@@ -137,7 +222,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* --- PRODUCTS TAB --- */}
         {tab === 'products' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}><button className="btn btn-primary" onClick={() => { setEditingProduct(null); setShowProductModal(true); }}><Plus size={17} /> Thêm sản phẩm</button></div>
@@ -148,7 +232,21 @@ export default function AdminDashboard() {
                   <tr key={getId(p)}>
                     <td><div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}><img src={p.image} style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'cover' }} /> <span style={{ fontWeight: 600 }}>{p.name}</span></div></td>
                     <td style={{ fontWeight: 800, color: 'var(--primary)' }}>{p.price.toLocaleString()}đ/{p.unit || 'kg'}</td>
-                    <td style={{ textAlign: 'right' }}><button onClick={() => { setEditingProduct(p); setShowProductModal(true); }} className="btn btn-ghost" style={{ padding: '0.4rem' }}><Edit2 size={15} /></button> <button onClick={() => deleteProduct(getId(p))} className="btn btn-ghost" style={{ padding: '0.4rem', color: 'var(--red)' }}><Trash2 size={15} /></button></td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button onClick={() => { setEditingProduct(p); setShowProductModal(true); }} className="btn btn-ghost" style={{ padding: '0.4rem' }}><Edit2 size={15} /></button> 
+                      <button onClick={async () => {
+                        const res = await Swal.fire({
+                          title: 'Xóa sản phẩm?',
+                          text: `Bạn có chắc muốn xóa ${p.name}?`,
+                          icon: 'warning',
+                          showCancelButton: true,
+                          confirmButtonColor: '#ef4444',
+                          confirmButtonText: 'Xóa ngay',
+                          cancelButtonText: 'Hủy'
+                        });
+                        if (res.isConfirmed) deleteProduct(getId(p));
+                      }} className="btn btn-ghost" style={{ padding: '0.4rem', color: 'var(--red)' }}><Trash2 size={15} /></button>
+                    </td>
                   </tr>
                 ))}</tbody>
               </table></div>
@@ -156,7 +254,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* --- ORDERS TAB --- */}
         {tab === 'orders' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {orders.map(order => (
@@ -171,19 +268,9 @@ export default function AdminDashboard() {
                     onChange={(e) => updateOrderStatus(order._id, e.target.value)}
                     className="input"
                     style={{ 
-                      width: 'auto', 
-                      fontSize: '0.75rem', 
-                      fontWeight: 700, 
-                      padding: '0.4rem 0.75rem',
-                      borderRadius: '8px',
-                      background: order.status === 'pending' ? '#fff7e6' : 
-                                 order.status === 'processing' ? '#e6f7ff' :
-                                 order.status === 'shipped' ? '#f9f0ff' :
-                                 order.status === 'delivered' ? '#f6ffed' : '#fff1f0',
-                      color: order.status === 'pending' ? '#d46b08' : 
-                             order.status === 'processing' ? '#096dd9' :
-                             order.status === 'shipped' ? '#722ed1' :
-                             order.status === 'delivered' ? '#389e0d' : '#cf1322',
+                      width: 'auto', fontSize: '0.75rem', fontWeight: 700, padding: '0.4rem 0.75rem', borderRadius: '8px',
+                      background: order.status === 'pending' ? '#fff7e6' : order.status === 'processing' ? '#e6f7ff' : order.status === 'shipped' ? '#f9f0ff' : order.status === 'delivered' ? '#f6ffed' : '#fff1f0',
+                      color: order.status === 'pending' ? '#d46b08' : order.status === 'processing' ? '#096dd9' : order.status === 'shipped' ? '#722ed1' : order.status === 'delivered' ? '#389e0d' : '#cf1322',
                       border: 'none'
                     }}
                   >
@@ -193,6 +280,9 @@ export default function AdminDashboard() {
                     <option value="delivered">ĐÃ GIAO</option>
                     <option value="cancelled">ĐÃ HỦY</option>
                   </select>
+                  <button onClick={() => deleteOrder(order._id)} className="btn btn-ghost" style={{ padding: '0.4rem', color: 'var(--red)' }} title="Xóa đơn hàng">
+                    <Trash2 size={16} />
+                  </button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
                   <div>
@@ -202,14 +292,45 @@ export default function AdminDashboard() {
                     ))}
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Người nhận: **{order.shippingInfo.fullName}**</p>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>SĐT: {order.shippingInfo.phone}</p>
-                    <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary)', marginTop: '0.5rem' }}>{order.totalAmount.toLocaleString()}đ</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Người nhận: **{order.shippingInfo?.fullName}**</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Địa chỉ: {order.shippingInfo?.address}</p>
+                    <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary)', marginTop: '0.5rem' }}>{order.totalAmount?.toLocaleString()}đ</p>
                   </div>
                 </div>
               </div>
             ))}
-            {orders.length === 0 && <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>Chưa có đơn hàng nào.</div>}
+          </div>
+        )}
+
+        {tab === 'shipping' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+            <div className="card" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1rem' }}>Thiết lập phí ship</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <select className="input" value={newFee.province} onChange={e => setNewFee({ ...newFee, province: e.target.value })} style={{ background: '#fff' }}>
+                  <option value="">Chọn Tỉnh thành</option>
+                  {apiProvinces.map(p => <option key={p.code} value={p.name}>{p.name}</option>)}
+                </select>
+                <input type="number" className="input" placeholder="Phí ship (VNĐ)" value={newFee.fee} onChange={e => setNewFee({ ...newFee, fee: e.target.value })} />
+                <button onClick={handleSaveShipping} className="btn btn-primary" style={{ width: '100%' }}><Save size={16} /> Lưu phí ship</button>
+              </div>
+            </div>
+            <div className="card" style={{ overflow: 'hidden' }}>
+              <div className="table-container"><table>
+                <thead style={{ background: 'var(--bg-section)' }}><tr><th>Tỉnh/Thành</th><th>Phí ship</th><th style={{ textAlign: 'right' }}>Thao tác</th></tr></thead>
+                <tbody>{shippingFees.map(f => (
+                  <tr key={f._id}>
+                    <td><div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MapPin size={14} color="var(--primary)" /> {f.province}</div></td>
+                    <td style={{ fontWeight: 800 }}>{f.fee.toLocaleString()}đ</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button onClick={() => deleteShippingFee(f._id)} className="btn btn-ghost" style={{ padding: '0.4rem', color: 'var(--red)' }}>
+                        <Trash2 size={15} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}</tbody>
+              </table></div>
+            </div>
           </div>
         )}
       </div>

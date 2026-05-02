@@ -1,8 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useUser } from './UserContext';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 const CartContext = createContext();
 
@@ -11,23 +12,52 @@ export const CartProvider = ({ children }) => {
   const router = useRouter();
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const isInitialMount = useRef(true);
 
-  // Load cart from localStorage
+  // 1. Initial Load: Try DB first if logged in, else localStorage
   useEffect(() => {
-    const savedCart = localStorage.getItem('vietchi_cart');
-    if (savedCart) {
-      try {
-        setCart(JSON.parse(savedCart));
-      } catch (e) {
-        console.error('Lỗi load giỏ hàng:', e);
+    const loadCart = async () => {
+      if (user) {
+        try {
+          const res = await fetch('/api/cart');
+          const data = await res.json();
+          if (data.cart) {
+            setCart(data.cart);
+            return;
+          }
+        } catch (e) {}
+      } else {
+        // Clear cart on logout
+        setCart([]);
+        localStorage.removeItem('vietchi_cart');
       }
-    }
-  }, []);
+    };
+    loadCart();
+  }, [user]);
 
-  // Save cart to localStorage
+  // 2. Sync to localStorage (Always) and DB (If logged in)
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     localStorage.setItem('vietchi_cart', JSON.stringify(cart));
-  }, [cart]);
+
+    if (user) {
+      const syncCart = async () => {
+        try {
+          await fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart })
+          });
+        } catch (e) {}
+      };
+      // Simple debounce/delay could be added here if needed
+      syncCart();
+    }
+  }, [cart, user]);
 
   const addToCart = (product, quantity = 1) => {
     if (!user) {
@@ -46,6 +76,7 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity }];
     });
+    toast.success(`Đã thêm ${product.name} vào giỏ hàng`);
     setIsCartOpen(true);
   };
 
@@ -63,8 +94,17 @@ export const CartProvider = ({ children }) => {
     ));
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
     setCart([]);
+    if (user) {
+      try {
+        await fetch('/api/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart: [] })
+        });
+      } catch (e) {}
+    }
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);

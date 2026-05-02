@@ -1,30 +1,76 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Package, Truck, Phone, User, MapPin, CreditCard, CheckCircle2, ArrowLeft } from 'lucide-react';
-
-const VIETNAM_PROVINCES = [
-  "An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", "Bắc Ninh", "Bến Tre", "Bình Định", "Bình Dương", "Bình Phước", "Bình Thuận", "Cà Mau", "Cần Thơ", "Cao Bằng", "Đà Nẵng", "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", "Gia Lai", "Hà Giang", "Hà Nam", "Hà Nội", "Hà Tĩnh", "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", "Khánh Hòa", "Kiên Giang", "Kon Tum", "Lai Châu", "Lâm Đồng", "Lạng Sơn", "Lào Cai", "Long An", "Nam Định", "Nghệ An", "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Quảng Bình", "Quảng Nam", "Quảng Ngãi", "Quảng Ninh", "Quảng Trị", "Sóc Trăng", "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", "Thừa Thiên Huế", "Tiền Giang", "TP Hồ Chí Minh", "Trà Vinh", "Tuyên Quang", "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"
-];
+import { toast } from 'react-hot-toast';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
   const { user } = useUser();
   const router = useRouter();
   
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [shippingFees, setShippingFees] = useState([]);
+  const [currentFee, setCurrentFee] = useState(0);
+
   const [form, setForm] = useState({
     fullName: user?.name || '',
     phone: '',
-    province: 'Hà Nội',
+    province: '',
+    district: '',
+    ward: '',
     address: '',
     note: ''
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    fetch('https://provinces.open-api.vn/api/p/')
+      .then(res => res.json())
+      .then(data => setProvinces(data));
+    
+    fetch('/api/shipping')
+      .then(res => res.json())
+      .then(data => setShippingFees(Array.isArray(data) ? data : []));
+  }, []);
+
+  useEffect(() => {
+    if (form.province) {
+      const pCode = provinces.find(p => p.name === form.province)?.code;
+      if (pCode) {
+        fetch(`https://provinces.open-api.vn/api/p/${pCode}?depth=2`)
+          .then(res => res.json())
+          .then(data => {
+            setDistricts(data.districts);
+            setForm(prev => ({ ...prev, district: '', ward: '' }));
+          });
+      }
+      
+      const feeObj = shippingFees.find(f => f.province === form.province);
+      setCurrentFee(feeObj ? feeObj.fee : 0);
+    }
+  }, [form.province, provinces, shippingFees]);
+
+  useEffect(() => {
+    if (form.district) {
+      const dCode = districts.find(d => d.name === form.district)?.code;
+      if (dCode) {
+        fetch(`https://provinces.open-api.vn/api/d/${dCode}?depth=2`)
+          .then(res => res.json())
+          .then(data => {
+            setWards(data.wards);
+            setForm(prev => ({ ...prev, ward: '' }));
+          });
+      }
+    }
+  }, [form.district, districts]);
 
   if (cart.length === 0 && !success) {
     return (
@@ -39,6 +85,7 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      const fullAddress = `${form.address}, ${form.ward}, ${form.district}, ${form.province}`;
       const orderData = {
         items: cart.map(item => ({
           productId: item._id,
@@ -48,11 +95,9 @@ export default function CheckoutPage() {
           unit: item.unit || 'kg',
           image: item.image
         })),
-        totalAmount: cartTotal,
-        shippingInfo: {
-          ...form,
-          address: `${form.address}, ${form.province}`
-        }
+        totalAmount: cartTotal + currentFee,
+        shippingFee: currentFee,
+        shippingInfo: { ...form, address: fullAddress }
       };
 
       const res = await fetch('/api/orders', {
@@ -62,11 +107,10 @@ export default function CheckoutPage() {
       });
 
       if (!res.ok) throw new Error('Đặt hàng thất bại');
-      
       setSuccess(true);
       clearCart();
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -80,7 +124,7 @@ export default function CheckoutPage() {
             <CheckCircle2 size={40} />
           </div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '1rem' }}>Đặt hàng thành công!</h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6 }}> Đơn hàng của bạn đã được tiếp nhận. Bạn có thể theo dõi trạng thái tại mục **Đơn hàng của tôi**.</p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: 1.6 }}> Đơn hàng đã được ghi nhận. Phí ship: {currentFee.toLocaleString()}đ.</p>
           <button onClick={() => router.push('/')} className="btn btn-primary" style={{ width: '100%', padding: '1rem' }}>Quay lại trang chủ</button>
         </motion.div>
       </div>
@@ -95,97 +139,66 @@ export default function CheckoutPage() {
         </button>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
-          {/* Form */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '1.8rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <Truck size={24} color="var(--primary)" /> Thông tin giao hàng
               </h2>
-              
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem' }}>Họ và tên người nhận</label>
-                  <div style={{ position: 'relative' }}>
-                    <User size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
-                    <input required className="input" style={{ paddingLeft: '2.8rem' }} placeholder="Nguyễn Văn A" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} />
-                  </div>
+                <input required className="input" placeholder="Họ và tên người nhận" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} />
+                <input required className="input" placeholder="Số điện thoại" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <select required className="input" value={form.province} onChange={e => setForm({...form, province: e.target.value})} style={{ background: '#fff', fontSize: '0.8rem' }}>
+                    <option value="">Tỉnh/Thành</option>
+                    {provinces.map(p => <option key={p.code} value={p.name}>{p.name}</option>)}
+                  </select>
+                  <select required className="input" value={form.district} onChange={e => setForm({...form, district: e.target.value})} disabled={!districts.length} style={{ background: '#fff', fontSize: '0.8rem' }}>
+                    <option value="">Quận/Huyện</option>
+                    {districts.map(d => <option key={d.code} value={d.name}>{d.name}</option>)}
+                  </select>
+                  <select required className="input" value={form.ward} onChange={e => setForm({...form, ward: e.target.value})} disabled={!wards.length} style={{ background: '#fff', fontSize: '0.8rem' }}>
+                    <option value="">Phường/Xã</option>
+                    {wards.map(w => <option key={w.code} value={w.name}>{w.name}</option>)}
+                  </select>
                 </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem' }}>Số điện thoại</label>
-                    <div style={{ position: 'relative' }}>
-                      <Phone size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
-                      <input required className="input" style={{ paddingLeft: '2.8rem' }} placeholder="0901234567" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem' }}>Tỉnh / Thành phố</label>
-                    <select required className="input" value={form.province} onChange={e => setForm({...form, province: e.target.value})} style={{ background: '#fff' }}>
-                      {VIETNAM_PROVINCES.map(p => <option key={p} value={p}>{p}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem' }}>Địa chỉ chi tiết (Số nhà, đường...)</label>
-                  <div style={{ position: 'relative' }}>
-                    <MapPin size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)' }} />
-                    <input required className="input" style={{ paddingLeft: '2.8rem' }} placeholder="Số nhà, tên đường, phường/xã..." value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.5rem' }}>Ghi chú đơn hàng (không bắt buộc)</label>
-                  <textarea rows={3} className="input" style={{ resize: 'none' }} placeholder="VD: Giao giờ hành chính, gọi trước khi đến..." value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
-                </div>
-
-                <div style={{ padding: '1.25rem', background: 'var(--bg-section)', borderRadius: '12px', border: '1px solid var(--border-card)' }}>
-                  <p style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.9rem', fontWeight: 700 }}>
-                    <CreditCard size={18} color="var(--primary)" /> Phương thức thanh toán
-                  </p>
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>Thanh toán khi nhận hàng (COD)</p>
-                </div>
-
-                <button disabled={loading} type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1.1rem', fontSize: '1.1rem', justifyContent: 'center', marginTop: '0.5rem', boxShadow: '0 10px 25px rgba(212,96,10,0.3)' }}>
+                <input required className="input" placeholder="Số nhà, tên đường..." value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
+                <textarea rows={3} className="input" placeholder="Ghi chú (không bắt buộc)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
+                <button disabled={loading} type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '0.5rem' }}>
                   {loading ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
                 </button>
               </form>
             </div>
           </motion.div>
 
-          {/* Summary */}
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
             <div className="card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '1.8rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <Package size={24} color="var(--primary)" /> Tóm tắt đơn hàng
               </h2>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
                 {cart.map(item => (
                   <div key={item._id} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <img src={item.image} alt="" style={{ width: '56px', height: '56px', borderRadius: '10px', objectFit: 'cover' }} />
+                    <img src={item.image} alt="" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem' }}>{item.name}</h4>
-                      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{item.quantity}{item.unit || 'kg'} x {item.price.toLocaleString('vi-VN')}đ</p>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 700 }}>{item.name}</h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.quantity}{item.unit} x {item.price.toLocaleString()}đ</p>
                     </div>
-                    <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{(item.price * item.quantity).toLocaleString('vi-VN')}đ</span>
+                    <span style={{ fontWeight: 800 }}>{(item.price * item.quantity).toLocaleString()}đ</span>
                   </div>
                 ))}
               </div>
-
-              <div style={{ borderTop: '2px dashed var(--border-card)', paddingTop: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+              <div style={{ borderTop: '1px solid var(--border-card)', paddingTop: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Tạm tính:</span>
-                  <span style={{ fontWeight: 700 }}>{cartTotal.toLocaleString('vi-VN')}đ</span>
+                  <span>{cartTotal.toLocaleString()}đ</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                  <span style={{ color: 'var(--text-muted)' }}>Phí vận chuyển:</span>
-                  <span style={{ fontWeight: 700, color: '#22c55e' }}>Miễn phí</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Phí ship ({form.province || 'chưa chọn'}):</span>
+                  <span style={{ fontWeight: 700, color: currentFee > 0 ? 'var(--primary)' : '#22c55e' }}>{currentFee > 0 ? `${currentFee.toLocaleString()}đ` : 'Miễn phí'}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800 }}>Tổng tiền:</span>
-                  <span style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary)' }}>{cartTotal.toLocaleString('vi-VN')}đ</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '2px solid var(--border-card)' }}>
+                  <span style={{ fontWeight: 800 }}>Tổng tiền:</span>
+                  <span style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>{(cartTotal + currentFee).toLocaleString()}đ</span>
                 </div>
               </div>
             </div>

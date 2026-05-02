@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { UserPlus, Mail, Lock, User, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '' });
@@ -26,8 +27,10 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.error);
       
       setSuccess(true);
+      toast.success('Đăng ký tài khoản thành công!');
       setTimeout(() => router.push('/login'), 2000);
     } catch (err) {
+      toast.error(err.message);
       setError(err.message);
     } finally {
       setLoading(false);

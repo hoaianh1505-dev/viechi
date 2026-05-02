@@ -98,6 +98,11 @@ export default function MyOrdersPage() {
                     {order.items.length} sản phẩm
                   </div>
                   <div style={{ textAlign: 'right' }}>
+                    {order.shippingFee > 0 && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>
+                        Phí ship: {order.shippingFee.toLocaleString()}đ
+                      </div>
+                    )}
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginRight: '0.5rem' }}>Tổng thanh toán:</span>
                     <span style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)' }}>{order.totalAmount.toLocaleString()}đ</span>
                   </div>

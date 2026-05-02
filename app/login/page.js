@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LogIn, Mail, Lock, ArrowRight, UserCheck } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
+import { toast } from 'react-hot-toast';
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -27,8 +28,10 @@ export default function LoginPage() {
       if (!res.ok) throw new Error(data.error);
       
       login(data.user);
+      toast.success('Chào mừng bạn quay trở lại!');
       router.push('/');
     } catch (err) {
+      toast.error(err.message);
       setError(err.message);
     } finally {
       setLoading(false);

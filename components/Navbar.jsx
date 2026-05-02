@@ -3,20 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useProducts } from '@/context/ProductContext';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { Fish, LayoutDashboard, LogOut, UserCircle2, ShoppingCart, User, ShoppingBag } from 'lucide-react';
 
 const Navbar = () => {
-  const { isAdmin: isProductAdmin, logout: productLogout } = useProducts();
-  const { user, logout: authLogout, isAdmin } = useUser();
+  const { user, logout, isAdmin } = useUser();
   const { cartCount, setIsCartOpen } = useCart();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await authLogout();
-    productLogout(); // For old admin state compatibility
+    await logout();
     router.push('/');
   };
 
