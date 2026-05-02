@@ -7,6 +7,7 @@ const ProductSchema = new mongoose.Schema({
   image:       { type: String, default: '' },
   gallery:     { type: [String], default: [] },
   category:    { type: String, default: '' },
+  unit:        { type: String, default: 'kg' },
 }, { timestamps: true });
 
 export default mongoose.models.Product || mongoose.model('Product', ProductSchema);

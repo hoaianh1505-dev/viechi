@@ -5,8 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { useProducts } from '@/context/ProductContext';
 import {
   MessageCircle, Phone, ArrowLeft, ExternalLink,
-  Tag, ZoomIn, ChevronLeft, ChevronRight, X
+  Tag, ZoomIn, ChevronLeft, ChevronRight, X, Minus, Plus, ShoppingCart
 } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ===== Lightbox =====
@@ -152,8 +153,10 @@ export default function ProductDetail() {
   const id = params.id;
   const router = useRouter();
   const { products, contact, getId } = useProducts();
+  const { addToCart } = useCart();
   const [showContact, setShowContact] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const [quantity, setQuantity] = useState(1);
 
   const product = products.find(p => String(getId(p)) === String(id));
   const allImages = product ? [product.image, ...(product.gallery || [])].filter(Boolean) : [];
@@ -288,6 +291,51 @@ export default function ProductDetail() {
               <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--primary)' }}>
                 {product.price.toLocaleString('vi-VN')}đ
               </span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600 }}>/{product.unit || 'kg'}</span>
+            </div>
+
+            {/* Quantity Selector */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1.5rem' }}>
+              <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-sub)' }}>Số lượng:</p>
+              <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1px solid var(--border-card)', borderRadius: '10px', padding: '4px' }}>
+                <button 
+                  onClick={() => setQuantity(q => Math.max(0.1, parseFloat((q - 0.1).toFixed(2))))}
+                  style={{ width: '36px', height: '36px', borderRadius: '8px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-sub)' }}
+                >
+                  <Minus size={18} />
+                </button>
+                <input 
+                  type="number"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseFloat(e.target.value) || 0.1)}
+                  step="0.1"
+                  style={{ width: '60px', textAlign: 'center', border: 'none', outline: 'none', fontWeight: 800, fontSize: '1.1rem', color: 'var(--text-main)' }}
+                />
+                <button 
+                  onClick={() => setQuantity(q => parseFloat((q + 0.1).toFixed(2)))}
+                  style={{ width: '36px', height: '36px', borderRadius: '8px', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-sub)' }}
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+              <span style={{ fontWeight: 700, color: 'var(--text-dim)' }}>{product.unit || 'kg'}</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+              <button
+                onClick={() => addToCart(product, quantity)}
+                className="btn btn-outline"
+                style={{ fontSize: '0.95rem', padding: '0.9rem', justifyContent: 'center', border: '2px solid var(--primary)', color: 'var(--primary)' }}
+              >
+                <ShoppingCart size={18} /> Thêm vào giỏ
+              </button>
+              <button
+                onClick={() => { addToCart(product, quantity); }}
+                className="btn btn-primary"
+                style={{ fontSize: '0.95rem', padding: '0.9rem', justifyContent: 'center' }}
+              >
+                Mua ngay
+              </button>
             </div>
 
             <div className="card" style={{ padding: '1.1rem 1.2rem', marginBottom: '1.5rem', background: '#fff' }}>

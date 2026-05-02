@@ -4,10 +4,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useProducts } from '@/context/ProductContext';
-import { Eye, ImageOff, Fish } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
+import { Eye, ImageOff, ShoppingCart } from 'lucide-react';
 
 const ProductCard = ({ product }) => {
   const { getId, contact } = useProducts();
+  const { addToCart } = useCart();
   const pid = getId(product);
 
   return (
@@ -64,25 +66,53 @@ const ProductCard = ({ product }) => {
             gap: '0.4rem',
             flexWrap: 'wrap'
           }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.95rem' }}>
-              {product.price?.toLocaleString('vi-VN')}đ
-            </span>
-            <Link
-              href={`/product/${pid}`}
-              className="btn btn-primary"
-              style={{ 
-                padding: '0.4rem 0.7rem', 
-                fontSize: '0.72rem', 
-                borderRadius: '8px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.2rem',
-                minWidth: 'fit-content'
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <Eye size={12} /> <span style={{ whiteSpace: 'nowrap' }}>Xem</span>
-            </Link>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+              <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.95rem' }}>
+                {product.price?.toLocaleString('vi-VN')}đ
+              </span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 600 }}>/{product.unit || 'kg'}</span>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '0.6rem', flex: 1 }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
+                className="btn btn-ghost"
+                style={{ 
+                  padding: '0.5rem 0.75rem', 
+                  minWidth: 'auto', 
+                  borderRadius: '10px', 
+                  border: '1.5px solid var(--primary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'var(--primary-light)',
+                  color: 'var(--primary)'
+                }}
+                title="Thêm vào giỏ hàng"
+              >
+                <ShoppingCart size={16} />
+              </button>
+
+              <Link
+                href={`/product/${pid}`}
+                className="btn btn-primary"
+                style={{ 
+                  flex: 1,
+                  padding: '0.5rem 1rem', 
+                  fontSize: '0.82rem', 
+                  borderRadius: '10px', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  gap: '0.4rem',
+                  fontWeight: 700,
+                  boxShadow: '0 4px 12px rgba(212,96,10,0.15)'
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <Eye size={15} /> <span>Xem chi tiết</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
