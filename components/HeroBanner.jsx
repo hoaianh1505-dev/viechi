@@ -46,11 +46,10 @@ const HeroBanner = () => {
   };
 
   return (
-    <div style={{
+    <div className="hero-banner" style={{
       position: 'relative',
       borderRadius: '20px',
       overflow: 'hidden',
-      height: '260px',
       marginBottom: '2rem',
       boxShadow: '0 12px 40px rgba(180,80,10,0.2)',
     }}>
@@ -77,7 +76,7 @@ const HeroBanner = () => {
           }} />
 
           {/* Left: Text */}
-          <div style={{ position: 'relative', zIndex: 2, padding: '0 2.5rem', maxWidth: '60%' }}>
+          <div style={{ position: 'relative', zIndex: 2, padding: '0 3.5rem', maxWidth: '80%' }}>
             {slide.tag && (
               <motion.span
                 initial={{ opacity: 0, y: 12 }}
@@ -102,12 +101,13 @@ const HeroBanner = () => {
             )}
 
             <motion.h2
+              className="hero-title"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.17 }}
               style={{
                 color: '#fff',
-                fontSize: '1.9rem',
+                fontSize: '2.5rem',
                 fontWeight: 800,
                 lineHeight: 1.15,
                 marginBottom: '0.65rem',
@@ -119,10 +119,11 @@ const HeroBanner = () => {
 
             {slide.subtitle && (
               <motion.p
+                className="hero-subtitle"
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem', lineHeight: 1.6 }}
+                style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1rem', lineHeight: 1.6 }}
               >
                 {slide.subtitle}
               </motion.p>

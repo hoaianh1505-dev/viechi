@@ -382,7 +382,8 @@ export default function AdminDashboard() {
               </button>
             </div>
             <div className="card" style={{ overflow: 'hidden' }}>
-              <table>
+              <div className="table-container">
+                <table>
                 <thead style={{ background: 'var(--bg-section)' }}>
                   <tr><th style={{ textAlign: 'left' }}>Sản phẩm</th><th style={{ textAlign: 'left' }}>Danh mục</th><th style={{ textAlign: 'left' }}>Giá</th><th style={{ textAlign: 'right' }}>Thao tác</th></tr>
                 </thead>
@@ -416,6 +417,7 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+            </div>
               {products.length === 0 && <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>Chưa có sản phẩm nào.</div>}
             </div>
           </div>

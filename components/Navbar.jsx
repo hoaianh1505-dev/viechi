@@ -43,14 +43,14 @@ const Navbar = () => {
           {isAdmin ? (
             <>
               <Link href="/admin" className="btn btn-ghost" style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', gap: '0.35rem' }}>
-                <LayoutDashboard size={15} /> Quản trị
+                <LayoutDashboard size={15} /> <span className="hide-mobile">Quản trị</span>
               </Link>
               <button
                 onClick={() => { logout(); router.push('/'); }}
                 className="btn btn-outline"
                 style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', gap: '0.35rem' }}
               >
-                <LogOut size={15} /> Đăng xuất
+                <LogOut size={15} /> <span className="hide-mobile">Đăng xuất</span>
               </button>
             </>
           ) : (

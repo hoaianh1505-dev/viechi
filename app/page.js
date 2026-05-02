@@ -48,7 +48,7 @@ export default function Home() {
           {products.length > 0 ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(215px, 1fr))',
               gap: '1.25rem',
             }}>
               {products.map((product, index) => (

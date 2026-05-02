@@ -187,7 +187,12 @@ export default function ProductDetail() {
           <ArrowLeft size={16} /> Quay lại
         </button>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '55% 1fr', gap: '2.5rem', alignItems: 'start' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+          gap: '2.5rem', 
+          alignItems: 'start' 
+        }}>
           {/* ===== LEFT: Images ===== */}
           <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}>
             {/* Main image - large */}

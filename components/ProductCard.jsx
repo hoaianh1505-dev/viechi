@@ -4,10 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useProducts } from '@/context/ProductContext';
-import { Eye, ImageOff } from 'lucide-react';
+import { Eye, ImageOff, Fish } from 'lucide-react';
 
 const ProductCard = ({ product }) => {
-  const { getId } = useProducts();
+  const { getId, contact } = useProducts();
   const pid = getId(product);
 
   return (
@@ -48,7 +48,7 @@ const ProductCard = ({ product }) => {
               {product.name}
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: '0.85rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '2.1rem' }}>
-              {product.description || 'Đặc sản khô hải sản thơm ngon, chất lượng cao từ miền Tây.'}
+              {product.description || 'Đặc sản khô hải sản thơm ngon, chất lượng cao từ VietChi.'}
             </p>
           </div>
         </Link>
@@ -56,7 +56,7 @@ const ProductCard = ({ product }) => {
         {/* Price & Action (Dưới cùng) */}
         <div style={{ padding: '0 1rem 1rem', marginTop: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid var(--border-card)' }}>
-            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.05rem' }}>
+            <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.95rem' }}>
               {product.price?.toLocaleString('vi-VN')}đ
             </span>
             <Link
