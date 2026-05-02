@@ -50,8 +50,9 @@ const HeroBanner = () => {
       position: 'relative',
       borderRadius: '20px',
       overflow: 'hidden',
-      marginBottom: '2rem',
-      boxShadow: '0 12px 40px rgba(180,80,10,0.2)',
+      marginBottom: '1.5rem',
+      height: '240px',
+      boxShadow: '0 10px 30px rgba(180,80,10,0.15)',
     }}>
       <AnimatePresence initial={false} custom={dir}>
         <motion.div
@@ -68,6 +69,7 @@ const HeroBanner = () => {
             display: 'flex',
             alignItems: 'center',
           }}
+          className="hero-slide-content"
         >
           {/* Subtle pattern */}
           <div style={{
@@ -76,7 +78,7 @@ const HeroBanner = () => {
           }} />
 
           {/* Left: Text */}
-          <div style={{ position: 'relative', zIndex: 2, padding: '0 3.5rem', maxWidth: '80%' }}>
+          <div style={{ position: 'relative', zIndex: 2, padding: '0 4.5rem', maxWidth: '65%', flex: 1 }}>
             {slide.tag && (
               <motion.span
                 initial={{ opacity: 0, y: 12 }}
@@ -87,13 +89,13 @@ const HeroBanner = () => {
                   background: 'rgba(255,255,255,0.25)',
                   border: '1px solid rgba(255,255,255,0.4)',
                   color: '#fff',
-                  padding: '0.2rem 0.85rem',
+                  padding: '0.15rem 0.75rem',
                   borderRadius: '999px',
-                  fontSize: '0.72rem',
+                  fontSize: '0.68rem',
                   fontWeight: 700,
                   letterSpacing: '0.07em',
                   textTransform: 'uppercase',
-                  marginBottom: '0.7rem',
+                  marginBottom: '0.5rem',
                 }}
               >
                 {slide.tag}
@@ -107,10 +109,10 @@ const HeroBanner = () => {
               transition={{ delay: 0.17 }}
               style={{
                 color: '#fff',
-                fontSize: '2.5rem',
+                fontSize: '2rem',
                 fontWeight: 800,
-                lineHeight: 1.15,
-                marginBottom: '0.65rem',
+                lineHeight: 1.2,
+                marginBottom: '0.4rem',
                 textShadow: '0 2px 8px rgba(0,0,0,0.2)',
               }}
             >
@@ -123,7 +125,7 @@ const HeroBanner = () => {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1rem', lineHeight: 1.6 }}
+                style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
               >
                 {slide.subtitle}
               </motion.p>
@@ -131,7 +133,7 @@ const HeroBanner = () => {
           </div>
 
           {/* Right: Image */}
-          <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="hero-image-container" style={{ position: 'relative', height: '100%', width: '35%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '4rem' }}>
             {slide.image ? (
               <motion.img
                 initial={{ opacity: 0, scale: 0.88 }}
@@ -139,7 +141,7 @@ const HeroBanner = () => {
                 transition={{ delay: 0.12, duration: 0.45 }}
                 src={slide.image}
                 alt={slide.title}
-                style={{ height: '88%', width: '100%', objectFit: 'contain', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.3))' }}
+                style={{ height: '85%', width: '100%', objectFit: 'contain', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.3))' }}
                 onError={e => { e.target.style.display = 'none'; }}
               />
             ) : (
@@ -163,21 +165,21 @@ const HeroBanner = () => {
               key={side}
               onClick={fn}
               style={{
-                position: 'absolute', [side]: '12px', top: '50%', transform: 'translateY(-50%)',
+                position: 'absolute', [side]: '8px', top: '50%', transform: 'translateY(-50%)',
                 zIndex: 10,
                 background: 'rgba(255,255,255,0.2)',
-                border: '1px solid rgba(255,255,255,0.35)',
+                border: '1px solid rgba(255,255,255,0.3)',
                 borderRadius: '50%',
-                width: '36px', height: '36px',
+                width: '32px', height: '32px',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', cursor: 'pointer',
                 backdropFilter: 'blur(8px)',
                 transition: 'background 0.2s',
               }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.38)'}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.35)'}
               onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
             >
-              <Icon size={18} />
+              <Icon size={16} />
             </button>
           ))}
         </>
