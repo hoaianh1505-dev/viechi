@@ -8,6 +8,10 @@ export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [contact, setContact] = useState({ 
+    zalo: '0987.654.321', 
+    facebook: 'https://facebook.com/vietchi.dacsan' 
+  });
 
   const fetchAll = async () => {
     try {
@@ -59,6 +63,7 @@ export const ProductProvider = ({ children }) => {
     <ProductContext.Provider value={{ 
       products, 
       banners, 
+      contact,
       loading,
       addProduct,
       updateProduct,
