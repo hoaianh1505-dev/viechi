@@ -12,8 +12,30 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-        <span style={{ color: 'var(--text-muted)' }}>Đang tải...</span>
+      <div style={{ 
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+        height: '70vh', gap: '1.5rem' 
+      }}>
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+          style={{ 
+            width: '60px', height: '60px', borderRadius: '18px', 
+            background: 'var(--gradient)', display: 'flex', 
+            alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 10px 25px rgba(212,96,10,0.25)'
+          }}
+        >
+          <Fish size={32} color="#fff" />
+        </motion.div>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
+            Đang chuẩn bị đặc sản...
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            Vui lòng đợi trong giây lát nhé!
+          </p>
+        </div>
       </div>
     );
   }

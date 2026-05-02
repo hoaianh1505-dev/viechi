@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useProducts } from '@/context/ProductContext';
 import {
   MessageCircle, Phone, ArrowLeft, ExternalLink,
-  Tag, ZoomIn, ChevronLeft, ChevronRight, X, Minus, Plus, ShoppingCart
+  Tag, ZoomIn, ChevronLeft, ChevronRight, X, Minus, Plus, ShoppingCart, Fish
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -152,7 +152,7 @@ export default function ProductDetail() {
   const params = useParams();
   const id = params.id;
   const router = useRouter();
-  const { products, contact, getId } = useProducts();
+  const { products, contact, getId, loading } = useProducts();
   const { addToCart } = useCart();
   const [showContact, setShowContact] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -161,6 +161,21 @@ export default function ProductDetail() {
   const product = products.find(p => String(getId(p)) === String(id));
   const allImages = product ? [product.image, ...(product.gallery || [])].filter(Boolean) : [];
   const [activeIdx, setActiveIdx] = useState(0);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '70vh', gap: '1.5rem' }}>
+        <motion.div animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }} transition={{ repeat: Infinity, duration: 1.5 }}
+          style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 10px 25px rgba(212,96,10,0.25)' }}>
+          <Fish size={32} color="#fff" />
+        </motion.div>
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>Đang tìm sản phẩm...</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Đợi VietChi một chút nhé!</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) return (
     <div style={{ textAlign: 'center', padding: '8rem 1rem' }}>
