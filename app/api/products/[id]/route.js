@@ -1,43 +1,52 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Product from '@/models/Product';
+import jwt from 'jsonwebtoken';
 
-// GET one
+const checkAdmin = (req) => {
+  const token = req.cookies.get('vietchi_token')?.value;
+  if (!token) return false;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.role === 'admin';
+  } catch (e) {
+    return false;
+  }
+};
+
 export async function GET(req, { params }) {
   try {
     await dbConnect();
     const { id } = await params;
     const product = await Product.findById(id);
-    if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
+    if (!product) return NextResponse.json({ error: 'Không tìm thấy' }, { status: 404 });
     return NextResponse.json(product);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-// PUT update
 export async function PUT(req, { params }) {
   try {
+    if (!checkAdmin(req)) return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
     await dbConnect();
     const { id } = await params;
     const body = await req.json();
-    const product = await Product.findByIdAndUpdate(id, body, { new: true, runValidators: true });
-    if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
+    const product = await Product.findByIdAndUpdate(id, body, { new: true });
     return NextResponse.json(product);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
 
-// DELETE
 export async function DELETE(req, { params }) {
   try {
+    if (!checkAdmin(req)) return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
     await dbConnect();
     const { id } = await params;
-    const product = await Product.findByIdAndDelete(id);
-    if (!product) return NextResponse.json({ error: 'Không tìm thấy sản phẩm' }, { status: 404 });
+    await Product.findByIdAndDelete(id);
     return NextResponse.json({ message: 'Đã xóa sản phẩm' });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }

@@ -7,7 +7,7 @@ export async function POST(req) {
   try {
     await connectDB();
     const body = await req.json();
-    const { items, totalAmount, shippingInfo } = body;
+    const { items, totalAmount, shippingFee, shippingInfo } = body;
 
     // Check for user token if available
     const token = req.cookies.get('vietchi_token')?.value;
@@ -23,6 +23,7 @@ export async function POST(req) {
       user: userId,
       items,
       totalAmount,
+      shippingFee: shippingFee || 0,
       shippingInfo,
       status: 'pending',
       paymentMethod: 'COD'

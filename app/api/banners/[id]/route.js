@@ -1,14 +1,26 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Banner from '@/models/Banner';
+import jwt from 'jsonwebtoken';
+
+const checkAdmin = (req) => {
+  const token = req.cookies.get('vietchi_token')?.value;
+  if (!token) return false;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.role === 'admin';
+  } catch (e) {
+    return false;
+  }
+};
 
 export async function PUT(req, { params }) {
   try {
+    if (!checkAdmin(req)) return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
     await dbConnect();
     const { id } = await params;
     const body = await req.json();
-    const banner = await Banner.findByIdAndUpdate(id, body, { new: true, runValidators: true });
-    if (!banner) return NextResponse.json({ error: 'Không tìm thấy banner' }, { status: 404 });
+    const banner = await Banner.findByIdAndUpdate(id, body, { new: true });
     return NextResponse.json(banner);
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 400 });
@@ -17,12 +29,12 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
+    if (!checkAdmin(req)) return NextResponse.json({ error: 'Không có quyền' }, { status: 403 });
     await dbConnect();
     const { id } = await params;
-    const banner = await Banner.findByIdAndDelete(id);
-    if (!banner) return NextResponse.json({ error: 'Không tìm thấy banner' }, { status: 404 });
+    await Banner.findByIdAndDelete(id);
     return NextResponse.json({ message: 'Đã xóa banner' });
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
