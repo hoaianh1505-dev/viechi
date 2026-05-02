@@ -43,7 +43,7 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Info */}
-          <div style={{ padding: '1rem' }}>
+          <div className="card-info" style={{ padding: '0.85rem' }}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {product.name}
             </h3>
@@ -54,18 +54,34 @@ const ProductCard = ({ product }) => {
         </Link>
 
         {/* Price & Action (Dưới cùng) */}
-        <div style={{ padding: '0 1rem 1rem', marginTop: 'auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid var(--border-card)' }}>
+        <div style={{ padding: '0 0.75rem 0.75rem', marginTop: 'auto' }}>
+          <div className="card-footer" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            paddingTop: '0.65rem', 
+            borderTop: '1px solid var(--border-card)',
+            gap: '0.4rem',
+            flexWrap: 'wrap'
+          }}>
             <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.95rem' }}>
               {product.price?.toLocaleString('vi-VN')}đ
             </span>
             <Link
               href={`/product/${pid}`}
               className="btn btn-primary"
-              style={{ padding: '0.4rem 0.85rem', fontSize: '0.78rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              style={{ 
+                padding: '0.4rem 0.7rem', 
+                fontSize: '0.72rem', 
+                borderRadius: '8px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.2rem',
+                minWidth: 'fit-content'
+              }}
               onClick={e => e.stopPropagation()}
             >
-              <Eye size={13} /> Xem
+              <Eye size={12} /> <span style={{ whiteSpace: 'nowrap' }}>Xem</span>
             </Link>
           </div>
         </div>

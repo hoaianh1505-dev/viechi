@@ -234,6 +234,9 @@ tbody tr:hover { background: var(--bg-section); }
 
 /* ===== MOBILE OVERRIDES ===== */
 @media (max-width: 768px) {
+  header .container {
+    height: 50px !important;
+  }
   h1 { font-size: 1.75rem; }
   h2 { font-size: 1.5rem; }
   
@@ -250,6 +253,35 @@ tbody tr:hover { background: var(--bg-section); }
 
   .hide-mobile { display: none !important; }
 }
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .card-info {
+    padding: 0.6rem !important;
+  }
+  .card-info h3 {
+    font-size: 0.85rem !important;
+  }
+  .card-info p {
+    font-size: 0.7rem !important;
+  }
+  .card-footer {
+    padding-top: 0.5rem !important;
+  }
+  .card-footer span {
+    font-size: 0.8rem !important;
+  }
+}
+
 
 .hero-banner {
   height: 220px;

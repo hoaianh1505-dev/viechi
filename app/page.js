@@ -46,11 +46,7 @@ export default function Home() {
 
           {/* Product Grid */}
           {products.length > 0 ? (
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(215px, 1fr))',
-              gap: '1.25rem',
-            }}>
+            <div className="product-grid">
               {products.map((product, index) => (
                 <motion.div
                   key={product._id || product.id}
