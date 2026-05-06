@@ -1,223 +1,210 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ImageOff } from 'lucide-react';
-import { useProducts } from '@/context/ProductContext';
-
-const BG_GRADIENTS = [
-  'linear-gradient(135deg, #7c2d12 0%, #d4600a 60%, #f59e0b 100%)',
-  'linear-gradient(135deg, #065f46 0%, #0d9488 60%, #34d399 100%)',
-  'linear-gradient(135deg, #78350f 0%, #b45309 60%, #d97706 100%)',
-];
+import { ChevronRight, ChevronLeft, ArrowRight, Star } from 'lucide-react';
+import { useSettings } from '@/context/SettingsContext';
 
 const HeroBanner = () => {
-  const { banners } = useProducts();
-  const [idx, setIdx] = useState(0);
-  const [dir, setDir] = useState(1);
+  const { settings } = useSettings();
+  const [current, setCurrent] = useState(0);
 
-  const slides = banners && banners.length > 0 ? banners : [];
-
-  const next = useCallback(() => {
-    if (slides.length < 2) return;
-    setDir(1); setIdx(p => (p + 1) % slides.length);
-  }, [slides.length]);
-
-  const prev = useCallback(() => {
-    if (slides.length < 2) return;
-    setDir(-1); setIdx(p => (p - 1 + slides.length) % slides.length);
-  }, [slides.length]);
+  const banners = settings?.banners?.length > 0 ? settings.banners : [
+    {
+      tag: 'Welcome',
+      title: 'Chào mừng bạn đến với VietChi',
+      subtitle: 'Khám phá những đặc sản thượng hạng từ biển cả.',
+      image: 'https://images.unsplash.com/photo-1544070078-a212eaa27b45?q=80&w=2069&auto=format&fit=crop',
+      link: '#products-section'
+    }
+  ];
 
   useEffect(() => {
-    if (slides.length < 2) return;
-    const t = setInterval(next, 5000);
-    return () => clearInterval(t);
-  }, [next, slides.length]);
+    if (banners.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % banners.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [banners.length]);
 
-  if (slides.length === 0) return null;
+  const nextSlide = () => setCurrent((prev) => (prev + 1) % banners.length);
+  const prevSlide = () => setCurrent((prev) => (prev - 1 + banners.length) % banners.length);
 
-  const slide = slides[idx] || slides[0];
-  const bg = BG_GRADIENTS[idx % BG_GRADIENTS.length];
-
-  const variants = {
-    enter: d => ({ x: d > 0 ? '100%' : '-100%', opacity: 0 }),
-    center: { x: 0, opacity: 1 },
-    exit:  d => ({ x: d > 0 ? '-100%' : '100%', opacity: 0 }),
-  };
+  const currentBanner = banners[current % banners.length];
 
   return (
-    <div className="hero-banner" style={{
-      position: 'relative',
-      borderRadius: '20px',
-      overflow: 'hidden',
-      marginBottom: '1.5rem',
-      height: '240px',
-      boxShadow: '0 10px 30px rgba(180,80,10,0.15)',
+    <div style={{ 
+      position: 'relative', 
+      height: '360px', 
+      borderRadius: '32px', 
+      overflow: 'hidden', 
+      background: 'linear-gradient(135deg, #fff3ea 0%, #ffffff 100%)',
+      border: '1px solid #ffe2cc',
+      marginBottom: '2rem'
     }}>
-      <AnimatePresence initial={false} custom={dir}>
+      <AnimatePresence mode="wait">
         <motion.div
-          key={idx}
-          custom={dir}
-          variants={variants}
-          initial="enter"
-          animate="center"
-          exit="exit"
-          transition={{ type: 'tween', ease: 'easeInOut', duration: 0.5 }}
+          key={current}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ duration: 0.5 }}
           style={{
-            position: 'absolute', inset: 0,
-            background: bg,
-            display: 'flex',
+            height: '100%',
+            display: 'grid',
+            gridTemplateColumns: currentBanner.image ? '1.2fr 1fr' : '1fr',
             alignItems: 'center',
+            padding: '0 4rem',
+            textAlign: currentBanner.image ? 'left' : 'center'
           }}
-          className="hero-slide-content"
         >
-          {/* Subtle pattern */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            backgroundImage: 'radial-gradient(circle at 80% 50%, rgba(255,255,255,0.12) 0%, transparent 60%)',
-          }} />
-
-          {/* Left: Text */}
-          <div style={{ position: 'relative', zIndex: 2, padding: '0 4.5rem', maxWidth: '65%', flex: 1 }}>
-            {slide.tag && (
-              <motion.span
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                style={{
-                  display: 'inline-block',
-                  background: 'rgba(255,255,255,0.25)',
-                  border: '1px solid rgba(255,255,255,0.4)',
-                  color: '#fff',
-                  padding: '0.15rem 0.75rem',
-                  borderRadius: '999px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.07em',
-                  textTransform: 'uppercase',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                {slide.tag}
-              </motion.span>
-            )}
-
-            <motion.h2
-              className="hero-title"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.17 }}
+          {/* Content Side */}
+          <div style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: currentBanner.image ? 'flex-start' : 'center' }}>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
               style={{
-                color: '#fff',
-                fontSize: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                color: 'var(--primary)',
                 fontWeight: 800,
-                lineHeight: 1.2,
-                marginBottom: '0.4rem',
-                textShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                fontSize: '0.85rem',
+                marginBottom: '1rem',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
               }}
             >
-              {slide.title}
-            </motion.h2>
+              <Star size={16} fill="var(--primary)" /> {currentBanner.tag}
+            </motion.div>
+            
+            <motion.h1
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              style={{ 
+                fontSize: '2.8rem', 
+                fontWeight: 900, 
+                color: '#1e293b', 
+                lineHeight: 1.1, 
+                marginBottom: '1rem',
+                letterSpacing: '-1px'
+              }}
+            >
+              {currentBanner.title}
+            </motion.h1>
 
-            {slide.subtitle && (
-              <motion.p
-                className="hero-subtitle"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-              >
-                {slide.subtitle}
-              </motion.p>
-            )}
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              style={{ 
+                fontSize: '1rem', 
+                color: '#64748b', 
+                marginBottom: '2rem', 
+                lineHeight: 1.6,
+                maxWidth: currentBanner.image ? '450px' : '650px'
+              }}
+            >
+              {currentBanner.subtitle}
+            </motion.p>
+
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              <a href={currentBanner.link} className="btn btn-primary" style={{ 
+                padding: '1rem 2.5rem', 
+                borderRadius: '16px', 
+                fontSize: '1rem', 
+                fontWeight: 800, 
+                display: 'inline-flex', 
+                alignItems: 'center', 
+                gap: '0.75rem',
+                boxShadow: '0 10px 25px rgba(212, 96, 10, 0.2)',
+                textDecoration: 'none'
+              }}>
+                Mua Ngay <ArrowRight size={20} />
+              </a>
+            </motion.div>
           </div>
 
-          {/* Right: Image */}
-          <div className="hero-image-container" style={{ position: 'relative', height: '100%', width: '35%', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingRight: '4rem' }}>
-            {slide.image ? (
-              <motion.img
-                initial={{ opacity: 0, scale: 0.88 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.12, duration: 0.45 }}
-                src={slide.image}
-                alt={slide.title}
-                style={{ height: '85%', width: '100%', objectFit: 'contain', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.3))' }}
-                onError={e => { e.target.style.display = 'none'; }}
-              />
-            ) : (
+          {/* Image Side - ONLY IF IMAGE EXISTS */}
+          {currentBanner.image && (
+            <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* Background Decorative Shapes */}
+              <div style={{ 
+                position: 'absolute', 
+                width: '280px', 
+                height: '280px', 
+                borderRadius: '50%', 
+                background: '#ffe2cc', 
+                opacity: 0.5,
+                zIndex: 0
+              }} />
+              
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.25 }}
-                style={{ color: '#fff', textAlign: 'center' }}
+                initial={{ scale: 0.8, opacity: 0, rotate: 5 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                transition={{ duration: 0.6, type: 'spring' }}
+                style={{ 
+                  zIndex: 1,
+                  width: '320px',
+                  height: '260px',
+                  borderRadius: '24px',
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                  border: '8px solid #fff'
+                }}
               >
-                <ImageOff size={56} />
+                <img 
+                  src={currentBanner.image} 
+                  alt="Banner" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               </motion.div>
-            )}
-          </div>
+
+              {/* Floating Badge */}
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                style={{
+                  position: 'absolute',
+                  top: '20%',
+                  right: '10%',
+                  background: '#fff',
+                  padding: '0.8rem 1.2rem',
+                  borderRadius: '16px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  zIndex: 2
+                }}
+              >
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e' }} />
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b' }}>Đang bán chạy</span>
+              </motion.div>
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
 
-      {/* Arrows */}
-      {slides.length > 1 && (
-        <>
-          {[{ fn: prev, icon: ChevronLeft, side: 'left' }, { fn: next, icon: ChevronRight, side: 'right' }].map(({ fn, icon: Icon, side }) => (
-            <button
-              key={side}
-              onClick={fn}
-              style={{
-                position: 'absolute', [side]: '8px', top: '50%', transform: 'translateY(-50%)',
-                zIndex: 10,
-                background: 'rgba(255,255,255,0.2)',
-                border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: '50%',
-                width: '32px', height: '32px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', cursor: 'pointer',
-                backdropFilter: 'blur(8px)',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.35)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-            >
-              <Icon size={16} />
-            </button>
-          ))}
-        </>
-      )}
-
-      {/* Dots */}
-      {slides.length > 1 && (
-        <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 10 }}>
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => { setDir(i > idx ? 1 : -1); setIdx(i); }}
-              style={{
-                width: i === idx ? '24px' : '7px', height: '7px',
-                borderRadius: '999px',
-                background: i === idx ? '#fff' : 'rgba(255,255,255,0.45)',
-                border: 'none', cursor: 'pointer',
-                transition: 'all 0.3s',
-              }}
-            />
-          ))}
+      {/* Navigation - Small & Subtle */}
+      {banners.length > 1 && (
+        <div style={{ 
+          position: 'absolute', 
+          bottom: '1.5rem', 
+          right: '4rem', 
+          display: 'flex', 
+          gap: '0.75rem',
+          zIndex: 3
+        }}>
+          <button onClick={prevSlide} style={{ width: '40px', height: '40px', borderRadius: '12px', border: '1px solid #ffe2cc', background: '#fff', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronLeft size={20} /></button>
+          <button onClick={nextSlide} style={{ width: '40px', height: '40px', borderRadius: '12px', border: '1px solid #ffe2cc', background: '#fff', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ChevronRight size={20} /></button>
         </div>
-      )}
-
-      {/* Progress */}
-      {slides.length > 1 && (
-        <motion.div
-          key={idx}
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 5, ease: 'linear' }}
-          style={{
-            position: 'absolute', bottom: 0, left: 0,
-            height: '3px', width: '100%',
-            background: 'rgba(255,255,255,0.6)',
-            transformOrigin: 'left',
-          }}
-        />
       )}
     </div>
   );

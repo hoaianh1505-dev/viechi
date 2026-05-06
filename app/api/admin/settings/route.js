@@ -7,11 +7,8 @@ export async function GET() {
   try {
     let settings = await Settings.findOne({});
     if (!settings) {
-      settings = await Settings.create({
-        siteName: 'VietChi',
-        siteTitle: 'Đặc sản hải sản khô cao cấp',
-        banners: []
-      });
+      // Create with schema defaults (including default banner)
+      settings = await Settings.create({});
     }
     return NextResponse.json(settings);
   } catch (error) {

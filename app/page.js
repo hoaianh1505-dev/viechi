@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useProducts } from '@/context/ProductContext';
+import { useSettings } from '@/context/SettingsContext';
 import ProductCard from '@/components/ProductCard';
 import HeroBanner from '@/components/HeroBanner';
 import { motion } from 'framer-motion';
@@ -9,6 +10,7 @@ import { Fish, ShieldCheck, Truck, Headphones, Award, Users, Map, Star, Shopping
 
 export default function Home() {
   const { products, loading } = useProducts();
+  const { settings } = useSettings();
 
   if (loading) {
     return (
@@ -30,7 +32,7 @@ export default function Home() {
         </motion.div>
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.4rem' }}>
-            Đang chuẩn bị đặc sản...
+            {settings?.siteName || 'VietChi'} đang chuẩn bị...
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             Vui lòng đợi trong giây lát nhé!
@@ -48,7 +50,7 @@ export default function Home() {
       </div>
 
       {/* ===== PRODUCT SECTION ===== */}
-      <section style={{ background: 'var(--bg)', paddingBottom: '4rem' }}>
+      <section id="products-section" style={{ background: 'var(--bg)', paddingBottom: '4rem' }}>
         <div className="container">
           {/* Section header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
@@ -60,7 +62,7 @@ export default function Home() {
                   Sản phẩm nổi bật
                 </h2>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '2px' }}>
-                  {products.length} loại khô · Đặt hàng giao tận nơi
+                  {products.length} sản phẩm · Giao tận nơi
                 </p>
               </div>
             </div>
@@ -104,10 +106,10 @@ export default function Home() {
             gap: '2.5rem' 
           }}>
             {[
-              { icon: ShieldCheck, title: 'Sạch & Tự Nhiên', desc: 'Sản phẩm được phơi thủ công, không dùng chất bảo quản.' },
-              { icon: Truck, title: 'Giao Hàng Nhanh', desc: 'Vận chuyển toàn quốc, đóng gói cẩn thận, an toàn.' },
-              { icon: Award, title: 'Chất Lượng Loại 1', desc: 'Tuyển chọn từ những mẻ khô ngon nhất vùng biển Kiên Giang.' },
-              { icon: Headphones, title: 'Hỗ Trợ 24/7', desc: 'Luôn sẵn sàng tư vấn và giải đáp thắc mắc của khách hàng.' },
+              { icon: ShieldCheck, title: 'Chất Lượng Thượng Hạng', desc: 'Sản phẩm được tuyển chọn kỹ lưỡng, đảm bảo tiêu chuẩn cao nhất.' },
+              { icon: Truck, title: 'Giao Hàng Toàn Quốc', desc: 'Vận chuyển nhanh chóng, đóng gói cẩn thận, an toàn đến tay khách.' },
+              { icon: Award, title: 'Uy Tín Tuyệt Đối', desc: 'Cam kết chất lượng và sự hài lòng của khách hàng lên hàng đầu.' },
+              { icon: Headphones, title: 'Hỗ Trợ Tận Tâm', desc: 'Luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của khách hàng.' },
             ].map((item, i) => (
               <div key={i} style={{ textAlign: 'center' }}>
                 <div style={{ 
@@ -139,11 +141,11 @@ export default function Home() {
             <div style={{ flex: '1 1 400px' }}>
               <div style={{ width: '50px', height: '4px', background: 'var(--gradient)', borderRadius: '2px', marginBottom: '1.5rem' }} />
               <h2 style={{ fontSize: '2rem', fontWeight: 900, marginBottom: '1.5rem', lineHeight: 1.2 }}>
-                VietChi — Gói trọn <br />
-                <span style={{ color: 'var(--primary)' }}>tinh hoa biển Việt</span>
+                {settings?.siteName || 'VietChi'} — <br />
+                <span style={{ color: 'var(--primary)' }}>Khẳng định đẳng cấp thương hiệu</span>
               </h2>
               <p style={{ color: 'var(--text-main)', fontSize: '1rem', lineHeight: 1.8, marginBottom: '2rem' }}>
-                Khởi nguồn từ tình yêu với những món khô truyền thống của quê hương Kiên Giang, VietChi mang đến cho bạn những sản phẩm hải sản khô thượng hạng. Chúng tôi cam kết giữ trọn hương vị nguyên bản thông qua quy trình phơi nắng tự nhiên và bảo quản khắt khe.
+                {settings?.brandStory || 'Chúng tôi tự hào mang đến những sản phẩm tốt nhất cho khách hàng. Với tâm huyết và sự tận tâm, mỗi sản phẩm gửi đi đều là một lời cam kết về chất lượng.'}
               </p>
               <button 
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}

@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, 
   Settings, LogOut, ChevronLeft, ChevronRight,
-  Truck, MessageSquare, Bell, Home, ArrowLeft
+  Truck, MessageSquare, Bell, Home, ArrowLeft,
+  Image as ImageIcon
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '../../context/SettingsContext';
@@ -30,7 +31,15 @@ export default function AdminLayout({ children }) {
       {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? '80px' : '280px' }}
+        animate={{ 
+          width: isCollapsed ? '80px' : '280px',
+        }}
+        transition={{ 
+          type: 'spring', 
+          stiffness: 200, 
+          damping: 25,
+          mass: 0.8
+        }}
         style={{
           background: '#fff3ea', // Tone cam nhạt chuẩn web
           borderRight: '1px solid #ffe2cc',
@@ -40,7 +49,7 @@ export default function AdminLayout({ children }) {
           top: 0,
           height: '100vh',
           zIndex: 50,
-          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+          overflow: 'hidden'
         }}
       >
         {/* Toggle Button at top */}
@@ -119,9 +128,19 @@ export default function AdminLayout({ children }) {
                   }}
                 >
                   <item.icon size={22} style={{ flexShrink: 0, color: isActive ? 'var(--primary)' : '#94a3b8' }} />
-                  {!isCollapsed && (
-                    <span style={{ fontWeight: isActive ? 800 : 600, fontSize: '0.95rem' }}>{item.name}</span>
-                  )}
+                  <AnimatePresence>
+                    {!isCollapsed && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ fontWeight: isActive ? 800 : 600, fontSize: '0.95rem', whiteSpace: 'nowrap' }}
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                   {isActive && (
                     <motion.div 
                       layoutId="sidebarActive"
@@ -151,13 +170,23 @@ export default function AdminLayout({ children }) {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 boxShadow: '0 8px 20px rgba(212, 96, 10, 0.25)',
-                justifyContent: isCollapsed ? 'center' : 'flex-start'
+                justifyContent: isCollapsed ? 'center' : 'flex-start',
+                overflow: 'hidden'
               }}
             >
               <Home size={22} style={{ flexShrink: 0 }} />
-              {!isCollapsed && (
-                <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>Quay lại cửa hàng</span>
-              )}
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    style={{ fontWeight: 800, fontSize: '0.9rem', whiteSpace: 'nowrap' }}
+                  >
+                    Quay lại cửa hàng
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.div>
           </Link>
         </div>

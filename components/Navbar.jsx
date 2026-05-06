@@ -5,11 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
+import { useSettings } from '@/context/SettingsContext';
 import { Fish, LayoutDashboard, LogOut, UserCircle2, ShoppingCart, User, ShoppingBag } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout, isAdmin } = useUser();
   const { cartCount, setIsCartOpen } = useCart();
+  const { settings } = useSettings();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -19,28 +21,34 @@ const Navbar = () => {
 
   return (
     <header style={{
-      background: '#fff',
-      borderBottom: '1px solid var(--border-card)',
-      boxShadow: '0 1px 8px rgba(180,80,20,0.07)',
+      background: 'rgba(255, 255, 255, 0.85)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderBottom: '1px solid rgba(255,243,234,0.6)',
+      boxShadow: '0 4px 15px rgba(212,96,10,0.04)',
       position: 'sticky',
       top: 0,
       zIndex: 50,
     }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '58px' }}>
+      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
         {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', textDecoration: 'none' }}>
-          <div style={{
-            width: '34px', height: '34px', borderRadius: '10px',
-            background: 'var(--gradient)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 3px 10px rgba(212,96,10,0.3)',
-            flexShrink: 0,
-          }}>
-            <span style={{ color: '#fff', fontWeight: 900, fontSize: '1.1rem' }}>V</span>
-          </div>
-          <div>
-            <span style={{ fontWeight: 800, fontSize: '1.1rem', background: 'var(--gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              VietChi
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }}>
+          {settings?.logo ? (
+            <img src={settings.logo} alt="Logo" style={{ height: '36px', width: 'auto', borderRadius: '8px' }} />
+          ) : (
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: 'var(--gradient)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 3px 10px rgba(212,96,10,0.25)',
+              flexShrink: 0,
+            }}>
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: '1.2rem' }}>{settings?.siteName?.charAt(0) || 'V'}</span>
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#1e293b', lineHeight: 1 }}>
+              {settings?.siteName || 'VietChi'}
             </span>
           </div>
         </Link>
