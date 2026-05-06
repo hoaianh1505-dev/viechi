@@ -137,107 +137,82 @@ const Navbar = () => {
           </button>
 
           {/* Divider */}
-          <div style={{ width: '1px', height: '28px', background: '#e2e8f0', margin: '0 0.15rem' }} />
+          <div className="hide-mobile" style={{ width: '1px', height: '28px', background: '#e2e8f0', margin: '0 0.15rem' }} />
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               {isAdmin && (
                 <Link href="/admin" style={{ 
-                  padding: '0.5rem 1rem',
+                  padding: '0.45rem 0.75rem',
                   borderRadius: '10px',
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   fontWeight: 800,
                   color: 'var(--primary)',
                   background: 'var(--primary-light)',
                   border: '1px solid rgba(212,96,10,0.15)',
                   textDecoration: 'none',
-                  display: 'flex', alignItems: 'center', gap: '0.4rem',
-                  transition: 'all 0.2s'
+                  display: 'flex', alignItems: 'center', gap: '0.35rem',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#ffe0c8'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'var(--primary-light)'; }}
                 >
                   <LayoutDashboard size={14} /> <span className="hide-mobile">Quản trị</span>
                 </Link>
               )}
-              <Link href="/orders" style={{
-                width: '42px', height: '42px', borderRadius: '12px',
-                border: '1px solid rgba(226,232,240,0.8)',
-                background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#64748b', textDecoration: 'none', transition: 'all 0.2s'
-              }} title="Đơn hàng của tôi"
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(226,232,240,0.8)'; e.currentTarget.style.color = '#64748b'; }}
-              >
-                <ShoppingBag size={18} />
-              </Link>
-
-              {/* User Pill */}
+              
+              {/* User Pill Compact */}
               <div style={{ 
-                display: 'flex', alignItems: 'center', gap: '0.5rem', 
-                padding: '0.35rem 0.5rem 0.35rem 0.75rem',
+                display: 'flex', alignItems: 'center', gap: '0.4rem', 
+                padding: '0.3rem',
                 background: '#f8fafc',
                 borderRadius: '24px',
                 border: '1px solid #e2e8f0',
-                transition: 'all 0.2s'
               }}>
                 <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
+                  width: '24px', height: '24px', borderRadius: '50%',
                   background: 'var(--gradient)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0
                 }}>
-                  <span style={{ color: '#fff', fontWeight: 900, fontSize: '0.7rem' }}>{user.name?.charAt(0)?.toUpperCase()}</span>
+                  <span style={{ color: '#fff', fontWeight: 900, fontSize: '0.65rem' }}>{user.name?.charAt(0)?.toUpperCase()}</span>
                 </div>
-                <span className="hide-mobile" style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
+                <span className="hide-mobile" style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1e293b', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
                 <button 
                   onClick={handleLogout} 
-                  title="Đăng xuất"
                   style={{ 
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: 'rgba(239,68,68,0.08)',
+                    width: '24px', height: '24px', borderRadius: '50%',
+                    background: 'none',
                     border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     color: '#ef4444',
-                    transition: 'all 0.2s'
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
                 >
-                  <LogOut size={13} />
+                  <LogOut size={12} />
                 </button>
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Link href="/login" style={{
-                padding: '0.55rem 1.2rem',
-                borderRadius: '12px',
-                fontSize: '0.85rem',
-                fontWeight: 700,
-                color: '#475569',
-                textDecoration: 'none',
-                transition: 'all 0.2s',
-                border: '1px solid transparent'
-              }}
-              onMouseEnter={e => { e.target.style.color = 'var(--primary)'; }}
-              onMouseLeave={e => { e.target.style.color = '#475569'; }}
-              >
-                Đăng nhập
-              </Link>
-              <Link href="/register" style={{
-                padding: '0.55rem 1.4rem',
-                borderRadius: '12px',
-                fontSize: '0.85rem',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '10px',
+                fontSize: '0.8rem',
                 fontWeight: 800,
                 color: '#fff',
                 background: 'var(--gradient)',
                 textDecoration: 'none',
-                boxShadow: '0 4px 14px rgba(212,96,10,0.25)',
-                transition: 'all 0.2s'
+                boxShadow: '0 4px 12px rgba(212,96,10,0.2)'
               }}
-              onMouseEnter={e => { e.target.style.transform = 'translateY(-1px)'; e.target.style.boxShadow = '0 6px 20px rgba(212,96,10,0.35)'; }}
-              onMouseLeave={e => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 14px rgba(212,96,10,0.25)'; }}
+              >
+                Đăng nhập
+              </Link>
+              <Link href="/register" className="hide-mobile" style={{
+                padding: '0.45rem 1rem',
+                borderRadius: '10px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                color: '#475569',
+                textDecoration: 'none',
+                border: '1px solid #e2e8f0'
+              }}
               >
                 Đăng ký
               </Link>

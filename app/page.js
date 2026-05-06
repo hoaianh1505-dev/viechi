@@ -66,7 +66,7 @@ export default function Home() {
       </div>
 
       {/* ===== TRUST MARQUEE ===== */}
-      <div style={{ 
+      <div className="hide-mobile" style={{ 
         overflow: 'hidden', 
         background: '#1c0f06',
         padding: '0.9rem 0',
@@ -141,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* ===== WHY CHOOSE US ===== */}
-      <section style={{ padding: '5rem 0', background: '#fff', overflow: 'hidden' }}>
+      <section className="hide-mobile" style={{ padding: '5rem 0', background: '#fff', overflow: 'hidden' }}>
         <div className="container">
           <Reveal>
             <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
@@ -204,7 +204,7 @@ export default function Home() {
       </section>
 
       {/* ===== STATS + BRAND STORY ===== */}
-      <section id="about" style={{ padding: '5rem 0', background: 'var(--bg-section)' }}>
+      <section id="about" className="hide-mobile" style={{ padding: '5rem 0', background: 'var(--bg-section)' }}>
         <div className="container">
           <div style={{ display: 'flex', alignItems: 'center', gap: '4rem', flexWrap: 'wrap' }}>
             <div style={{ flex: '1 1 400px' }}>
@@ -298,10 +298,10 @@ export default function Home() {
                 >
                   <Sparkles size={40} color="rgba(255,255,255,0.9)" />
                 </motion.div>
-                <h2 style={{ color: '#fff', fontSize: '2.2rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1.2 }}>
+                <h2 className="hero-title" style={{ color: '#fff', fontSize: '2.2rem', fontWeight: 900, marginBottom: '1rem', lineHeight: 1.2 }}>
                   Bạn đã sẵn sàng trải nghiệm?
                 </h2>
-                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.05rem', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
+                <p className="hero-subtitle" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.05rem', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
                   Đặt hàng ngay hôm nay để nhận ưu đãi đặc biệt dành riêng cho khách hàng mới!
                 </p>
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>

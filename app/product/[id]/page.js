@@ -8,7 +8,9 @@ import {
   Tag, ZoomIn, ChevronLeft, ChevronRight, X, Minus, Plus, ShoppingCart, Fish
 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useUser } from '@/context/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Lock } from 'lucide-react';
 
 // ===== Lightbox =====
 const Lightbox = ({ images, startIndex, onClose }) => {
@@ -340,16 +342,31 @@ export default function ProductDetail() {
               <button
                 onClick={() => addToCart(product, quantity)}
                 className="btn btn-outline"
-                style={{ fontSize: '0.95rem', padding: '0.9rem', justifyContent: 'center', border: '2px solid var(--primary)', color: 'var(--primary)' }}
+                style={{ 
+                  fontSize: '0.95rem', padding: '0.9rem', justifyContent: 'center', 
+                  border: `2px solid ${user ? 'var(--primary)' : 'var(--text-dim)'}`, 
+                  color: user ? 'var(--primary)' : 'var(--text-dim)',
+                  background: user ? 'transparent' : '#f8fafc',
+                  opacity: user ? 1 : 0.8
+                }}
+                title={user ? "Thêm vào giỏ hàng" : "Đăng nhập để mua hàng"}
               >
-                <ShoppingCart size={18} /> Thêm vào giỏ
+                {user ? <ShoppingCart size={18} /> : <Lock size={16} />} 
+                <span style={{ marginLeft: '0.4rem' }}>Thêm vào giỏ</span>
               </button>
               <button
-                onClick={() => { addToCart(product, quantity); }}
+                onClick={() => addToCart(product, quantity)}
                 className="btn btn-primary"
-                style={{ fontSize: '0.95rem', padding: '0.9rem', justifyContent: 'center' }}
+                style={{ 
+                  fontSize: '0.95rem', padding: '0.9rem', justifyContent: 'center',
+                  background: user ? 'var(--gradient)' : 'var(--text-dim)',
+                  boxShadow: user ? '0 4px 12px rgba(212,96,10,0.15)' : 'none',
+                  opacity: user ? 1 : 0.8
+                }}
+                title={user ? "Mua ngay" : "Đăng nhập để mua hàng"}
               >
-                Mua ngay
+                {user ? <ShoppingCart size={18} /> : <Lock size={16} />}
+                <span style={{ marginLeft: '0.4rem' }}>Mua ngay</span>
               </button>
             </div>
 

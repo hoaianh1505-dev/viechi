@@ -5,11 +5,13 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useProducts } from '@/context/ProductContext';
 import { useCart } from '@/context/CartContext';
-import { Eye, ImageOff, ShoppingCart } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
+import { Eye, ImageOff, ShoppingCart, Lock } from 'lucide-react';
 
 const ProductCard = ({ product }) => {
   const { getId, contact } = useProducts();
   const { addToCart } = useCart();
+  const { user } = useUser();
   const pid = getId(product);
 
   return (
@@ -66,14 +68,14 @@ const ProductCard = ({ product }) => {
             gap: '0.4rem',
             flexWrap: 'wrap'
           }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+            <div className="price-tag" style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
               <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.95rem' }}>
                 {product.price?.toLocaleString('vi-VN')}đ
               </span>
               <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 600 }}>/{product.unit || 'kg'}</span>
             </div>
             
-            <div style={{ display: 'flex', gap: '0.6rem', flex: 1 }}>
+            <div className="action-btns" style={{ display: 'flex', gap: '0.6rem', flex: 1 }}>
               <button
                 onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
                 className="btn btn-ghost"
@@ -81,16 +83,17 @@ const ProductCard = ({ product }) => {
                   padding: '0.5rem 0.75rem', 
                   minWidth: 'auto', 
                   borderRadius: '10px', 
-                  border: '1.5px solid var(--primary)',
+                  border: `1.5px solid ${user ? 'var(--primary)' : 'var(--text-dim)'}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'var(--primary-light)',
-                  color: 'var(--primary)'
+                  background: user ? 'var(--primary-light)' : '#f1f5f9',
+                  color: user ? 'var(--primary)' : 'var(--text-dim)',
+                  opacity: user ? 1 : 0.8
                 }}
-                title="Thêm vào giỏ hàng"
+                title={user ? "Thêm vào giỏ hàng" : "Đăng nhập để mua hàng"}
               >
-                <ShoppingCart size={16} />
+                {user ? <ShoppingCart size={16} /> : <Lock size={14} />}
               </button>
 
               <Link
@@ -110,7 +113,7 @@ const ProductCard = ({ product }) => {
                 }}
                 onClick={e => e.stopPropagation()}
               >
-                <Eye size={15} /> <span>Xem chi tiết</span>
+                <Eye size={15} /> <span className="hide-mobile">Xem chi tiết</span>
               </Link>
             </div>
           </div>

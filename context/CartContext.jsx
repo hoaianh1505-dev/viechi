@@ -14,67 +14,33 @@ export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const isInitialMount = useRef(true);
 
-  // 1. Initial Load & Syncing
+  // 1. Initial Load & Syncing from DB
   useEffect(() => {
-    const loadAndSyncCart = async () => {
-      // Always load from localStorage first for instant UI
-      const savedCart = localStorage.getItem('vietchi_cart');
-      let localCart = [];
-      if (savedCart) {
-        try { localCart = JSON.parse(savedCart); setCart(localCart); } catch (e) {}
-      }
-
+    const fetchCartFromDB = async () => {
       if (user) {
         try {
           const res = await fetch('/api/cart');
-          const data = await res.json();
-          
-          if (data.cart && data.cart.length > 0) {
-            // MERGE LOGIC: If local guest cart has items, merge them with DB cart
-            if (localCart.length > 0) {
-              const merged = [...data.cart];
-              localCart.forEach(localItem => {
-                const exists = merged.find(dbItem => dbItem._id === localItem._id);
-                if (exists) {
-                  exists.quantity += localItem.quantity;
-                } else {
-                  merged.push(localItem);
-                }
-              });
-              setCart(merged);
-              // Save merged cart back to DB immediately
-              fetch('/api/cart', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart: merged })
-              });
-            } else {
-              setCart(data.cart);
-            }
-          } else if (localCart.length > 0) {
-            // If DB is empty but local has items, push local to DB
-            fetch('/api/cart', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ cart: localCart })
-            });
+          if (res.ok) {
+            const data = await res.json();
+            setCart(data.cart || []);
           }
         } catch (e) {
-          console.error("Cart sync error:", e);
+          console.error("Cart fetch error:", e);
         }
+      } else {
+        // If user logs out, clear the local state immediately
+        setCart([]);
       }
     };
-    loadAndSyncCart();
+    fetchCartFromDB();
   }, [user]);
 
-  // 2. Continuous Sync to localStorage and DB
+  // 2. Auto-sync to DB when cart changes
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-
-    localStorage.setItem('vietchi_cart', JSON.stringify(cart));
 
     if (user) {
       const timeoutId = setTimeout(() => {
@@ -89,6 +55,15 @@ export const CartProvider = ({ children }) => {
   }, [cart, user]);
 
   const addToCart = (product, quantity = 1) => {
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!', {
+        icon: '🔒',
+        duration: 3000
+      });
+      // Optionally open login side/modal here if you have one
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(item => item._id === product._id);
       if (existing) {

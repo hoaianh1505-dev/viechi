@@ -33,7 +33,7 @@ const HeroBanner = () => {
   const currentBanner = banners[current % banners.length];
 
   return (
-    <div style={{ 
+    <div className="hero-banner" style={{ 
       position: 'relative', 
       height: '360px', 
       borderRadius: '32px', 
@@ -49,6 +49,7 @@ const HeroBanner = () => {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.5 }}
+          className="hero-split"
           style={{
             height: '100%',
             display: 'grid',
@@ -83,6 +84,7 @@ const HeroBanner = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
+              className="hero-title"
               style={{ 
                 fontSize: '2.8rem', 
                 fontWeight: 900, 
@@ -99,6 +101,7 @@ const HeroBanner = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
+              className="hero-subtitle"
               style={{ 
                 fontSize: '1rem', 
                 color: '#64748b', 
@@ -133,7 +136,7 @@ const HeroBanner = () => {
 
           {/* Image Side - ONLY IF IMAGE EXISTS */}
           {currentBanner.image && (
-            <div style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="hero-image-side" style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {/* Background Decorative Shapes */}
               <div style={{ 
                 position: 'absolute', 
