@@ -15,14 +15,17 @@ export async function GET(req) {
     
     if (!userCart) return NextResponse.json({ cart: [] });
 
-    // Format to match frontend structure
-    const formattedCart = userCart.items.map(item => {
-      if (!item.productId) return null;
-      return {
-        ...item.productId._doc,
-        quantity: item.quantity
-      };
-    }).filter(Boolean);
+    // Format to match frontend structure, and filter out deleted products
+    const formattedCart = userCart.items
+      .filter(item => item.productId)
+      .map(item => {
+        const product = item.productId;
+        return {
+          ...product._doc,
+          _id: product._id.toString(),
+          quantity: item.quantity
+        };
+      });
 
     return NextResponse.json({ cart: formattedCart });
   } catch (error) {
@@ -40,7 +43,7 @@ export async function POST(req) {
     const { cart } = await req.json();
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const dbItems = cart.map(item => ({
+    const dbItems = (cart || []).map(item => ({
       productId: item._id,
       quantity: item.quantity
     }));
@@ -51,7 +54,7 @@ export async function POST(req) {
       { upsert: true, new: true }
     );
 
-    return NextResponse.json({ message: 'Đã cập nhật giỏ hàng' });
+    return NextResponse.json({ message: 'Đã lưu giỏ hàng vào Database' });
   } catch (error) {
     console.error('Lỗi POST Cart:', error);
     return NextResponse.json({ error: 'Lỗi server' }, { status: 500 });

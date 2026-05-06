@@ -14,28 +14,60 @@ export const CartProvider = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const isInitialMount = useRef(true);
 
-  // 1. Initial Load: Try DB first if logged in, else localStorage
+  // 1. Initial Load & Syncing
   useEffect(() => {
-    const loadCart = async () => {
+    const loadAndSyncCart = async () => {
+      // Always load from localStorage first for instant UI
+      const savedCart = localStorage.getItem('vietchi_cart');
+      let localCart = [];
+      if (savedCart) {
+        try { localCart = JSON.parse(savedCart); setCart(localCart); } catch (e) {}
+      }
+
       if (user) {
         try {
           const res = await fetch('/api/cart');
           const data = await res.json();
-          if (data.cart) {
-            setCart(data.cart);
-            return;
+          
+          if (data.cart && data.cart.length > 0) {
+            // MERGE LOGIC: If local guest cart has items, merge them with DB cart
+            if (localCart.length > 0) {
+              const merged = [...data.cart];
+              localCart.forEach(localItem => {
+                const exists = merged.find(dbItem => dbItem._id === localItem._id);
+                if (exists) {
+                  exists.quantity += localItem.quantity;
+                } else {
+                  merged.push(localItem);
+                }
+              });
+              setCart(merged);
+              // Save merged cart back to DB immediately
+              fetch('/api/cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart: merged })
+              });
+            } else {
+              setCart(data.cart);
+            }
+          } else if (localCart.length > 0) {
+            // If DB is empty but local has items, push local to DB
+            fetch('/api/cart', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ cart: localCart })
+            });
           }
-        } catch (e) {}
-      } else {
-        // Clear cart on logout
-        setCart([]);
-        localStorage.removeItem('vietchi_cart');
+        } catch (e) {
+          console.error("Cart sync error:", e);
+        }
       }
     };
-    loadCart();
+    loadAndSyncCart();
   }, [user]);
 
-  // 2. Sync to localStorage (Always) and DB (If logged in)
+  // 2. Continuous Sync to localStorage and DB
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -45,26 +77,18 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('vietchi_cart', JSON.stringify(cart));
 
     if (user) {
-      const syncCart = async () => {
-        try {
-          await fetch('/api/cart', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart })
-          });
-        } catch (e) {}
-      };
-      // Simple debounce/delay could be added here if needed
-      syncCart();
+      const timeoutId = setTimeout(() => {
+        fetch('/api/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart })
+        }).catch(err => console.error("Auto-sync failed:", err));
+      }, 500); // Debounce to avoid too many requests
+      return () => clearTimeout(timeoutId);
     }
   }, [cart, user]);
 
   const addToCart = (product, quantity = 1) => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
     setCart(prev => {
       const existing = prev.find(item => item._id === product._id);
       if (existing) {

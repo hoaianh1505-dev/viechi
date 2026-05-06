@@ -1,54 +1,95 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req) {
   try {
     const { messages } = await req.json();
     const userMessage = messages[messages.length - 1].content;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json({ 
+        role: "model", 
+        content: "Chào bạn! Hiện tại mình chưa được kết nối với 'bộ não' Gemini (Thiếu API Key trong .env). Bạn vui lòng bổ sung Key để mình có thể tư vấn cho bạn nhé! 🙏" 
+      });
+    }
 
     await dbConnect();
     const products = await Product.find({}).lean();
     
     const productContext = products.map(p => 
-      `- ${p.name}: ${p.price.toLocaleString()}đ/${p.unit || 'kg'}. Mo ta: ${p.description}`
+      `- **${p.name}**: ${p.price.toLocaleString()}đ/${p.unit || 'kg'}. Đặc điểm: ${p.description}`
     ).join("\n");
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
     const systemPrompt = `
-      Ban la VietChi AI - chuyen vien tu van tan tam cua cua hang dac san VietChi (chuyen hai san kho Kien Giang).
-      Day la danh sach san pham hien tai cua cua hang:
+      Bạn là **VietChi AI Advisor** - Chuyên gia tư vấn đặc sản của cửa hàng VietChi. 
+      Phong cách: Thân thiện, nhiệt tình, thật thà, đậm chất người miền Tây Nam Bộ (Kiên Giang).
+      
+      Danh sách sản phẩm chúng ta đang có:
       ${productContext}
 
-      Nhiem vu cua ban:
-      1. Tra loi cau hoi cua khach hang mot cach lich su, than thien, dam chat mien Tay.
-      2. Tu van dung loai san pham dua tren nhu cau cua khach (vd: lam qua bieu, an lien, hay nau canh).
-      3. Luon nhac khach rang san pham cua VietChi la hang loai 1, phoi tu nhien, khong chat bao quan.
-      4. Neu khach hoi ve ship, hay bao la "VietChi giao hang toan quoc, phi ship se duoc tinh khi thanh toan".
-      5. Tra loi ngan gon, xuc tich, de hieu.
+      Quy tắc tư vấn:
+      1. Khách hỏi về sản phẩm: Hãy tư vấn nhiệt tình, nêu bật ưu điểm (phơi nắng tự nhiên, không chất bảo quản, hàng loại 1).
+      2. Khách hỏi về đơn hàng: Hãy bảo khách cung cấp "Mã đơn hàng" (thường bắt đầu bằng # và có trong phần Lịch sử đơn hàng hoặc email). Sau đó hướng dẫn khách chờ bộ phận CSKH kiểm tra trong vài phút.
+      3. Khách hỏi về vận chuyển: VietChi giao hàng toàn quốc. Phí ship sẽ được hệ thống tính toán chính xác khi khách nhập địa chỉ ở trang Thanh toán.
+      4. Luôn kết thúc bằng một lời chúc hoặc một câu mời gọi mua hàng khéo léo.
+      5. Nếu khách hỏi điều gì không liên quan đến hải sản hoặc VietChi, hãy lịch sự từ chối và lái câu chuyện quay lại đặc sản.
       
-      Hay su dung tieng Viet co dau.
+      Sử dụng định dạng Markdown (như bôi đậm **tên sản phẩm**) để câu trả lời dễ đọc.
     `;
 
-    const chat = model.startChat({
-      history: [
-        { role: "user", parts: [{ text: systemPrompt }] },
-        { role: "model", parts: [{ text: "Da hieu! Toi la VietChi AI, toi da san sang tu van cho khach hang ve cac dac san kho thuong hang cua cua hang." }] },
-      ],
+    // 1. Thử gọi với Flash trước
+    let apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    let response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: `${systemPrompt}\n\nKhách hàng hỏi: ${userMessage}` }] }]
+      })
     });
 
-    const result = await chat.sendMessage(userMessage);
-    const response = await result.response;
-    const text = response.text();
+    let data = await response.json();
 
-    return NextResponse.json({ role: "model", content: text });
+    // 2. Nếu lỗi 404 (Không tìm thấy model), hãy tự động dò tìm model khả dụng
+    if (!response.ok && data.error?.code === 404) {
+      console.warn("Model mặc định không tìm thấy, đang tự động dò tìm model khả dụng cho Key của bạn...");
+      
+      const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+      const listRes = await fetch(listUrl);
+      const listData = await listRes.json();
+      
+      if (listData.models && listData.models.length > 0) {
+        // Tìm bất kỳ model nào hỗ trợ generateContent
+        const availableModel = listData.models.find(m => m.supportedGenerationMethods.includes("generateContent"));
+        
+        if (availableModel) {
+          console.log("Tìm thấy model thay thế:", availableModel.name);
+          apiUrl = `https://generativelanguage.googleapis.com/v1beta/${availableModel.name}:generateContent?key=${apiKey}`;
+          response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `${systemPrompt}\n\nKhách hàng hỏi: ${userMessage}` }] }]
+            })
+          });
+          data = await response.json();
+        }
+      }
+    }
+
+    if (!response.ok) {
+      console.error("Gemini API Error Detail:", data);
+      throw new Error(data.error?.message || "Lỗi API");
+    }
+
+    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Mình đang hơi bối rối, bạn hỏi lại được không?";
+    return NextResponse.json({ role: "model", content: aiText });
 
   } catch (error) {
-    console.error("Chatbot Error:", error);
-    return NextResponse.json({ error: "AI dang ban mot chut, ban thu lai sau nhe!" }, { status: 500 });
+    console.error("Chatbot Final Error:", error.message);
+    return NextResponse.json({ 
+      error: "AI đang bảo trì hệ thống một chút, bạn thử lại sau nhe!" 
+    }, { status: 500 });
   }
 }
