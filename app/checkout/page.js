@@ -28,6 +28,7 @@ export default function CheckoutPage() {
     address: '',
     note: ''
   });
+  const [paymentMethod, setPaymentMethod] = useState('COD');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -97,7 +98,8 @@ export default function CheckoutPage() {
         })),
         totalAmount: cartTotal + currentFee,
         shippingFee: currentFee,
-        shippingInfo: { ...form, address: fullAddress }
+        shippingInfo: { ...form, address: fullAddress },
+        paymentMethod
       };
 
       const res = await fetch('/api/orders', {
@@ -106,7 +108,22 @@ export default function CheckoutPage() {
         body: JSON.stringify(orderData)
       });
 
-      if (!res.ok) throw new Error('Đặt hàng thất bại');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Đặt hàng thất bại');
+
+      if (paymentMethod === 'VNPAY') {
+        const payRes = await fetch('/api/payment/vnpay', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId: data.orderId })
+        });
+        const payData = await payRes.json();
+        if (payData.paymentUrl) {
+          window.location.href = payData.paymentUrl;
+          return;
+        }
+      }
+
       setSuccess(true);
       clearCart();
     } catch (err) {
@@ -163,8 +180,46 @@ export default function CheckoutPage() {
                 </div>
                 <input required className="input" placeholder="Số nhà, tên đường..." value={form.address} onChange={e => setForm({...form, address: e.target.value})} />
                 <textarea rows={3} className="input" placeholder="Ghi chú (không bắt buộc)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
-                <button disabled={loading} type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '0.5rem' }}>
-                  {loading ? 'Đang xử lý...' : 'Xác nhận đặt hàng'}
+                
+                {/* Payment Method */}
+                <div style={{ marginTop: '1rem' }}>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: '1rem' }}>Phương thức thanh toán</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    {[
+                      { id: 'COD', label: 'Thanh toán khi nhận hàng (COD)', icon: Truck },
+                      { id: 'VNPAY', label: 'Thanh toán Online qua VNPay', icon: CreditCard },
+                    ].map(method => (
+                      <div 
+                        key={method.id}
+                        onClick={() => setPaymentMethod(method.id)}
+                        style={{ 
+                          padding: '1rem', 
+                          borderRadius: '12px', 
+                          border: `2px solid ${paymentMethod === method.id ? 'var(--primary)' : 'var(--border-card)'}`,
+                          background: paymentMethod === method.id ? 'var(--primary-light)' : '#fff',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '1rem',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <div style={{ 
+                          width: '20px', height: '20px', borderRadius: '50%', 
+                          border: `2px solid ${paymentMethod === method.id ? 'var(--primary)' : '#cbd5e1'}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                          {paymentMethod === method.id && <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'var(--primary)' }} />}
+                        </div>
+                        <method.icon size={20} color={paymentMethod === method.id ? 'var(--primary)' : 'var(--text-muted)'} />
+                        <span style={{ fontSize: '0.9rem', fontWeight: 600, color: paymentMethod === method.id ? 'var(--text-main)' : 'var(--text-muted)' }}>{method.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button disabled={loading} type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '1rem' }}>
+                  {loading ? 'Đang xử lý...' : paymentMethod === 'VNPAY' ? 'Thanh toán ngay' : 'Xác nhận đặt hàng'}
                 </button>
               </form>
             </div>

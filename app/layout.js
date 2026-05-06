@@ -3,6 +3,7 @@ import { UserProvider } from '@/context/UserContext';
 import { CartProvider } from '@/context/CartContext';
 import Navbar from '@/components/Navbar';
 import CartDrawer from '@/components/CartDrawer';
+import ChatBot from '@/components/ChatBot';
 import { Toaster } from 'react-hot-toast';
 import './globals.css';
 import './App.css';
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
             <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
               <Navbar />
               <CartDrawer />
+              <ChatBot />
               <main style={{ flex: 1 }}>
                 {children}
               </main>

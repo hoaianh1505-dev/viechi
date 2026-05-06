@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cookie": "^1.1.1",
