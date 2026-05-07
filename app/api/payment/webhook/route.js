@@ -53,8 +53,8 @@ export async function POST(req) {
       return NextResponse.json({ message: 'Không tìm thấy đơn hàng tương ứng' }, { status: 404 });
     }
 
-    // Kiểm tra số tiền (Chấp nhận nếu chuyển bằng hoặc nhiều hơn số tiền đơn hàng)
-    if (amount < order.totalAmount) {
+    // Kiểm tra số tiền (Cho phép sai số 1000đ để tránh lỗi do làm tròn hoặc trừ tiền lẻ định danh)
+    if (amount < (order.totalAmount - 1000)) {
       console.warn(`Số tiền không đủ. Yêu cầu: ${order.totalAmount}, Nhận: ${amount}`);
       return NextResponse.json({ message: 'Số tiền không khớp' }, { status: 400 });
     }
