@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import Link from 'next/link';
 
 const AdminOrdersPage = () => {
   const [orders, setOrders] = useState([]);
@@ -80,6 +81,10 @@ const AdminOrdersPage = () => {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
   );
 
+  const ArrowLeft = ({ size, color }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+  );
+
   return (
     <div style={{ padding: isMobile ? '1rem' : '2rem', minHeight: '100vh', background: '#f8fafc' }}>
       <header style={{ 
@@ -90,11 +95,23 @@ const AdminOrdersPage = () => {
         marginBottom: isMobile ? '1.5rem' : '2.5rem',
         gap: '1.5rem'
       }}>
-        <div>
-          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <ShoppingBag size={isMobile ? 24 : 32} color="var(--primary)" /> Đơn hàng
-          </h1>
-          <p style={{ color: '#64748b', marginTop: '0.25rem', fontSize: isMobile ? '0.85rem' : '1rem' }}>Quản lý các giao dịch từ khách hàng</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {isMobile && (
+            <Link href="/admin" style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: '#fff', border: '1px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#64748b', textDecoration: 'none'
+            }}>
+              <ArrowLeft size={20} color="#64748b" />
+            </Link>
+          )}
+          <div>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <ShoppingBag size={isMobile ? 24 : 32} color="var(--primary)" /> Đơn hàng
+            </h1>
+            <p style={{ color: '#64748b', marginTop: '0.25rem', fontSize: isMobile ? '0.85rem' : '1rem' }}>Quản lý các giao dịch từ khách hàng</p>
+          </div>
         </div>
 
         <div style={{ 

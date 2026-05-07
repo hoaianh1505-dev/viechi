@@ -20,6 +20,14 @@ const AdminShippingPage = () => {
     provinceName: '',
     fee: 0
   });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,21 +92,21 @@ const AdminShippingPage = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', paddingBottom: '5rem' }}>
       <header>
-        <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>Quản lý Phí Vận Chuyển</h1>
-        <p style={{ color: '#64748b' }}>Thiết lập phí giao hàng chi tiết cho từng tỉnh thành trên cả nước.</p>
+        <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#1e293b' }}>Phí vận chuyển</h1>
+        <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Thiết lập phí giao hàng chi tiết từng tỉnh thành.</p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '2rem' }} className="admin-grid-layout">
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1.5fr', gap: isMobile ? '1.5rem' : '2rem' }}>
         
         {/* Left: Edit Form */}
-        <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', height: 'fit-content', position: 'sticky', top: '2rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <MapPin size={20} color="var(--primary)" /> Thiết lập nhanh
+        <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', height: 'fit-content', position: isMobile ? 'static' : 'sticky', top: '2rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <MapPin size={20} color="var(--primary)" /> Cài nhanh
           </h3>
           
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.5rem' }}>Chọn Tỉnh/Thành phố</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.5rem' }}>Khu vực</label>
               <select 
                 value={editData.provinceCode}
                 onChange={(e) => {
@@ -120,12 +128,12 @@ const AdminShippingPage = () => {
             </div>
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.5rem' }}>Phí vận chuyển (VNĐ)</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.5rem' }}>Phí ship (VNĐ)</label>
               <input 
                 type="number"
                 value={editData.fee === 0 ? '' : editData.fee}
                 onChange={(e) => setEditData({...editData, fee: e.target.value === '' ? 0 : Number(e.target.value)})}
-                placeholder="Nhập số tiền..."
+                placeholder="Nhập phí..."
                 style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc', fontWeight: 700 }}
               />
             </div>
@@ -134,7 +142,7 @@ const AdminShippingPage = () => {
               type="submit" 
               disabled={saving}
               style={{ 
-                background: 'var(--gradient)', color: '#fff', padding: '1rem', 
+                background: 'var(--gradient)', color: '#fff', padding: '0.9rem', 
                 borderRadius: '16px', border: 'none', fontWeight: 900, 
                 cursor: 'pointer', display: 'flex', alignItems: 'center', 
                 justifyContent: 'center', gap: '0.7rem', marginTop: '1rem',
@@ -142,23 +150,23 @@ const AdminShippingPage = () => {
               }}
             >
               {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-              Lưu cấu hình
+              Lưu
             </button>
           </form>
 
-          <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#f0f9ff', borderRadius: '20px', display: 'flex', gap: '0.8rem' }}>
-            <AlertCircle size={20} color="#0369a1" style={{ flexShrink: 0 }} />
-            <p style={{ fontSize: '0.8rem', color: '#0369a1', lineHeight: 1.5 }}>
-              Lưu ý: Nếu một tỉnh thành không được thiết lập phí ship, hệ thống sẽ mặc định lấy <b>Phí vận chuyển mặc định</b> trong phần Cài đặt chung.
+          <div style={{ marginTop: '2rem', padding: '1rem', background: '#f0f9ff', borderRadius: '20px', display: 'flex', gap: '0.8rem' }}>
+            <AlertCircle size={18} color="#0369a1" style={{ flexShrink: 0 }} />
+            <p style={{ fontSize: '0.75rem', color: '#0369a1', lineHeight: 1.4 }}>
+              Lưu ý: Nếu chưa thiết lập, hệ thống sẽ dùng phí mặc định trong <b>Cài đặt</b>.
             </p>
           </div>
         </section>
 
         {/* Right: List Table */}
-        <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Bảng giá vận chuyển</h3>
-            <div style={{ position: 'relative', width: '250px' }}>
+        <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '28px', border: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '2rem', flexDirection: isMobile ? 'column' : 'row', gap: '1rem' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Bảng giá ship</h3>
+            <div style={{ position: 'relative', width: isMobile ? '100%' : '250px' }}>
               <Search size={16} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
               <input 
                 type="text" 
@@ -174,9 +182,9 @@ const AdminShippingPage = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #f1f5f9' }}>
-                  <th style={{ textAlign: 'left', padding: '1rem', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Tỉnh / Thành phố</th>
-                  <th style={{ textAlign: 'right', padding: '1rem', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Phí vận chuyển</th>
-                  <th style={{ textAlign: 'center', padding: '1rem', fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase' }}>Hành động</th>
+                  <th style={{ textAlign: 'left', padding: '1rem', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }}>Tỉnh / TP</th>
+                  <th style={{ textAlign: 'right', padding: '1rem', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }}>Phí ship</th>
+                  <th style={{ textAlign: 'center', padding: '1rem', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }}>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -191,9 +199,9 @@ const AdminShippingPage = () => {
                       <td style={{ padding: '1rem', textAlign: 'center' }}>
                         <button 
                           onClick={() => setEditData({ provinceCode: String(p.code), provinceName: p.name, fee: savedFee?.fee || 0 })}
-                          style={{ padding: '0.5rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', color: '#64748b' }}
+                          style={{ padding: '0.4rem 0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', color: '#64748b' }}
                         >
-                          Chỉnh sửa
+                          Sửa
                         </button>
                       </td>
                     </tr>

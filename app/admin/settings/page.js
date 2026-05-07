@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Save, Image as ImageIcon, MessageSquare, Phone, Globe, Plus, Trash2, 
-  Loader2, Star, Link as LinkIcon, MapPin, Clock, Bell, Info, Compass, Layout, CreditCard
+  Loader2, Star, Link as LinkIcon, MapPin, Clock, Bell, Info, Compass, Layout, CreditCard, ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { useSettings } from '@/context/SettingsContext';
+import Link from 'next/link';
 
-// Custom Social Icons to avoid lucide-react missing export errors
+// Custom Social Icons
 const FacebookIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
 );
@@ -28,6 +29,14 @@ export default function AdminSettings() {
   const [formData, setFormData] = useState(settings);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     if (settings) setFormData(settings);
@@ -119,88 +128,78 @@ export default function AdminSettings() {
   if (!formData) return <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', paddingBottom: '5rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b' }}>Cấu hình hệ thống</h1>
-          <p style={{ color: '#64748b' }}>Đồng nhất toàn bộ thương hiệu và trải nghiệm người dùng.</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1.5rem' : '2.5rem', paddingBottom: '5rem' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {isMobile && (
+            <Link href="/admin" style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: '#fff', border: '1px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#64748b', textDecoration: 'none'
+            }}>
+              <ArrowLeft size={20} />
+            </Link>
+          )}
+          <div>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 900, color: '#1e293b' }}>Cài đặt</h1>
+            <p style={{ color: '#64748b', fontSize: isMobile ? '0.75rem' : '0.85rem' }}>Cấu hình thương hiệu & thông tin web.</p>
+          </div>
         </div>
-        <button onClick={handleSave} disabled={saving} style={{ background: 'var(--gradient)', color: '#fff', padding: '0.9rem 2.5rem', borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.7rem', boxShadow: '0 8px 25px rgba(212,96,10,0.2)' }}>
-          {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />} Lưu cấu hình
+        <button onClick={handleSave} disabled={saving} style={{ 
+          background: 'var(--gradient)', color: '#fff', 
+          padding: isMobile ? '0.7rem 1.5rem' : '0.9rem 2.5rem', 
+          borderRadius: '16px', border: 'none', fontWeight: 800, cursor: 'pointer', 
+          display: 'flex', alignItems: 'center', gap: '0.7rem', 
+          boxShadow: '0 8px 25px rgba(212,96,10,0.2)',
+          fontSize: isMobile ? '0.85rem' : '1rem'
+        }}>
+          {saving ? <Loader2 className="animate-spin" size={isMobile ? 16 : 20} /> : <Save size={isMobile ? 16 : 20} />} 
+          {isMobile ? 'Lưu' : 'Lưu cấu hình'}
         </button>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
           {/* Payment Configuration */}
-          <section className="admin-section" style={{ background: '#fff', padding: '2.5rem', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid var(--border-card)' }}>
+          <section className="admin-section" style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid var(--border-card)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <CreditCard size={20} />
               </div>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: 1.1 }}>Cấu hình Thanh toán</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Thiết lập thông tin ngân hàng để nhận thanh toán qua QR</p>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: 1.1 }}>Thanh toán</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Thông tin QR ngân hàng</p>
               </div>
             </div>
 
-            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
+            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '1.5rem' }}>
               <div className="form-group">
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Tên Ngân hàng (VD: Vietcombank)</label>
-                <input
-                  type="text"
-                  value={formData.bankName}
-                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
-                  placeholder="VD: MB Bank, Techcombank..."
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
-                />
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Tên Ngân hàng</label>
+                <input type="text" value={formData.bankName} onChange={(e) => setFormData({ ...formData, bankName: e.target.value })} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc' }} />
               </div>
               <div className="form-group">
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Số tài khoản</label>
-                <input
-                  type="text"
-                  value={formData.bankAccount}
-                  onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
-                  placeholder="Nhập số tài khoản của bạn"
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
-                />
+                <input type="text" value={formData.bankAccount} onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc' }} />
               </div>
               <div className="form-group">
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Phí vận chuyển mặc định (VNĐ)</label>
-                <input
-                  type="number"
-                  value={formData.shippingFee}
-                  onChange={(e) => setFormData({ ...formData, shippingFee: Number(e.target.value) })}
-                  placeholder="VD: 30000"
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
-                />
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Phí ship mặc định</label>
+                <input type="number" value={formData.shippingFee} onChange={(e) => setFormData({ ...formData, shippingFee: Number(e.target.value) })} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc' }} />
               </div>
               <div className="form-group">
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Miễn phí ship khi đơn từ (VNĐ)</label>
-                <input
-                  type="number"
-                  value={formData.freeShippingThreshold}
-                  onChange={(e) => setFormData({ ...formData, freeShippingThreshold: Number(e.target.value) })}
-                  placeholder="VD: 500000"
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
-                />
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Ngưỡng Free ship</label>
+                <input type="number" value={formData.freeShippingThreshold} onChange={(e) => setFormData({ ...formData, freeShippingThreshold: Number(e.target.value) })} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc' }} />
               </div>
-              <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Tên chủ tài khoản (Viết hoa không dấu)</label>
-                <input
-                  type="text"
-                  value={formData.bankOwner}
-                  onChange={(e) => setFormData({ ...formData, bankOwner: e.target.value })}
-                  placeholder="VD: NGUYEN VAN A"
-                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
-                />
+              <div className="form-group" style={{ gridColumn: isMobile ? 'auto' : 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Tên chủ tài khoản</label>
+                <input type="text" value={formData.bankOwner} onChange={(e) => setFormData({ ...formData, bankOwner: e.target.value })} style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc' }} />
               </div>
             </div>
           </section>
 
         {/* Brand Section */}
-        <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
-            <Compass size={22} color="var(--primary)" /> Nhận diện thương hiệu
+            <Compass size={22} color="var(--primary)" /> Thương hiệu
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
             <div>
@@ -208,168 +207,57 @@ export default function AdminSettings() {
               <input value={formData.siteName} onChange={e => setFormData({...formData, siteName: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc', fontWeight: 700 }} />
             </div>
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem' }}>Slogan / Tiêu đề SEO</label>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem' }}>Slogan SEO</label>
               <input value={formData.siteTitle} onChange={e => setFormData({...formData, siteTitle: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <ImageUploader label="Logo chính" value={formData.logo} isUploading={uploading === 'logo'} onFileSelect={file => handleUpload(file, 'logo')} onUrlChange={val => setFormData({...formData, logo: val})} height="110px" />
-              <ImageUploader label="Favicon (Tab)" value={formData.favicon} isUploading={uploading === 'favicon'} onFileSelect={file => handleUpload(file, 'favicon')} onUrlChange={val => setFormData({...formData, favicon: val})} height="110px" />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <ImageUploader label="Logo chính" value={formData.logo} isUploading={uploading === 'logo'} onFileSelect={file => handleUpload(file, 'logo')} onUrlChange={val => setFormData({...formData, logo: val})} height="100px" />
+              <ImageUploader label="Favicon" value={formData.favicon} isUploading={uploading === 'favicon'} onFileSelect={file => handleUpload(file, 'favicon')} onUrlChange={val => setFormData({...formData, favicon: val})} height="100px" />
             </div>
           </div>
         </section>
 
         {/* Contact Info */}
-        <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
-            <Phone size={22} color="var(--primary)" /> Liên hệ & Địa chỉ
+            <Phone size={22} color="var(--primary)" /> Liên hệ
           </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div style={{ gridColumn: 'span 1' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1rem' }}>
+            <div>
               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>SĐT (Zalo)</label>
               <input value={formData.contactPhone} onChange={e => setFormData({...formData, contactPhone: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} />
             </div>
-            <div style={{ gridColumn: 'span 1' }}>
+            <div>
               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>Email</label>
               <input value={formData.contactEmail} onChange={e => setFormData({...formData, contactEmail: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} />
             </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>Địa chỉ cửa hàng</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f8fafc', padding: '0 0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9' }}>
-                <MapPin size={16} color="#94a3b8" />
-                <input value={formData.contactAddress} onChange={e => setFormData({...formData, contactAddress: e.target.value})} style={{ flex: 1, padding: '0.75rem 0', border: 'none', background: 'none', outline: 'none' }} />
-              </div>
+            <div style={{ gridColumn: isMobile ? 'auto' : 'span 2' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>Địa chỉ</label>
+              <input value={formData.contactAddress} onChange={e => setFormData({...formData, contactAddress: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} />
             </div>
-            <div style={{ gridColumn: 'span 2' }}>
-              <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>Google Maps Link (Dán mã nhúng hoặc Link)</label>
-              <input value={formData.googleMapsLink} onChange={e => setFormData({...formData, googleMapsLink: e.target.value})} placeholder="https://www.google.com/maps/embed?..." style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} />
-            </div>
-            <div style={{ gridColumn: 'span 2' }}>
-               <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>Giờ làm việc</label>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f8fafc', padding: '0 0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9' }}>
-                <Clock size={16} color="#94a3b8" />
-                <input value={formData.workingHours} onChange={e => setFormData({...formData, workingHours: e.target.value})} style={{ flex: 1, padding: '0.75rem 0', border: 'none', background: 'none', outline: 'none' }} />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Marketing & Announcement */}
-        <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
-              <Bell size={22} color="var(--primary)" /> Thanh thông báo (Banner Top)
-            </h3>
-            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '0.5rem' }}>
-              <input type="checkbox" checked={formData.announcementActive} onChange={e => setFormData({...formData, announcementActive: e.target.checked})} style={{ width: '20px', height: '20px', accentColor: 'var(--primary)' }} />
-              <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>Kích hoạt</span>
-            </label>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-             <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b' }}>Nội dung thông báo (Ví dụ: Miễn phí vận chuyển...)</label>
-             <textarea value={formData.announcementText} onChange={e => setFormData({...formData, announcementText: e.target.value})} rows={2} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc', resize: 'none' }} />
-          </div>
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-             <h3 style={{ fontSize: '1.1rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
-               <MessageSquare size={20} color="var(--primary)" /> AI & Câu chuyện
-             </h3>
-             <textarea value={formData.brandStory} onChange={e => setFormData({...formData, brandStory: e.target.value})} placeholder="Nhập câu chuyện thương hiệu để AI hiểu và tư vấn khách hàng tốt hơn..." rows={4} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc', resize: 'none' }} />
-          </div>
-        </section>
-
-        {/* Social Links */}
-        <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
-            <Compass size={22} color="var(--primary)" /> Kết nối Mạng xã hội
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#f8fafc', padding: '0 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9' }}>
-               <FacebookIcon size={18} />
-               <input value={formData.socialFacebook} onChange={e => setFormData({...formData, socialFacebook: e.target.value})} placeholder="Link Facebook Page..." style={{ flex: 1, padding: '0.8rem 0', border: 'none', background: 'none', outline: 'none', fontSize: '0.85rem' }} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#f8fafc', padding: '0 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9' }}>
-               <InstagramIcon size={18} />
-               <input value={formData.socialInstagram} onChange={e => setFormData({...formData, socialInstagram: e.target.value})} placeholder="Link Instagram..." style={{ flex: 1, padding: '0.8rem 0', border: 'none', background: 'none', outline: 'none', fontSize: '0.85rem' }} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#f8fafc', padding: '0 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9' }}>
-               <YoutubeIcon size={18} />
-               <input value={formData.socialYoutube} onChange={e => setFormData({...formData, socialYoutube: e.target.value})} placeholder="Link Youtube Channel..." style={{ flex: 1, padding: '0.8rem 0', border: 'none', background: 'none', outline: 'none', fontSize: '0.85rem' }} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: '#f8fafc', padding: '0 1rem', borderRadius: '14px', border: '1.5px solid #f1f5f9' }}>
-               <TikTokIcon size={18} />
-               <input value={formData.socialTiktok} onChange={e => setFormData({...formData, socialTiktok: e.target.value})} placeholder="Link TikTok..." style={{ flex: 1, padding: '0.8rem 0', border: 'none', background: 'none', outline: 'none', fontSize: '0.85rem' }} />
-            </div>
-          </div>
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem' }}>
-             <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '0.4rem' }}>Dòng chữ Footer</label>
-             <input value={formData.footerText} onChange={e => setFormData({...formData, footerText: e.target.value})} style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} />
           </div>
         </section>
       </div>
 
-      {/* Banner Visual CRUD Section */}
-      <section style={{ background: '#fff', padding: '3rem', borderRadius: '32px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.8rem', color: '#1e293b' }}>
-              <Layout size={28} color="var(--primary)" /> Quản lý Banners Trực quan
-            </h3>
-            <p style={{ color: '#64748b' }}>Thêm mới, xóa và tùy chỉnh Banners hiển thị ngoài trang chủ.</p>
-          </div>
-          <button type="button" onClick={addBanner} style={{ padding: '1rem 2rem', borderRadius: '18px', background: 'var(--primary)', color: '#fff', border: 'none', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem', boxShadow: '0 10px 30px rgba(212,96,10,0.3)' }}>
-            <Plus size={24} /> Thêm Banner mới
-          </button>
+      {/* Banner Section */}
+      <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2.5rem', borderRadius: '32px', border: '1px solid #e2e8f0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.3rem', fontWeight: 900 }}>Quản lý Banners</h3>
+          <button type="button" onClick={addBanner} style={{ padding: '0.6rem 1.2rem', borderRadius: '12px', background: 'var(--primary)', color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer' }}>+ Thêm</button>
         </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {formData.banners?.map((banner, idx) => (
-            <motion.div layout key={idx} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ position: 'relative', padding: '2.5rem', borderRadius: '36px', background: '#f8fafc', border: '1.5px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: '3rem', boxShadow: '0 15px 45px rgba(0,0,0,0.03)' }}>
-              <button onClick={() => removeBanner(idx)} style={{ position: 'absolute', top: '1.25rem', right: '1.25rem', width: '42px', height: '42px', borderRadius: '14px', background: '#fee2e2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 4px 12px rgba(239,68,68,0.15)' }} title="Xóa Banner"><Trash2 size={22} /></button>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                 <p style={{ fontSize: '0.75rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Hình ảnh & Link</p>
-                 <ImageUploader value={banner.image} isUploading={uploading === idx} onFileSelect={file => handleUpload(file, 'banner', idx)} onUrlChange={val => updateBanner(idx, 'image', val)} height="240px" />
-                 <div style={{ padding: '0.9rem 1.2rem', background: '#fff', borderRadius: '14px', border: '1.5px solid #e2e8f0', display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                    <LinkIcon size={16} color="var(--primary)" />
-                    <input value={banner.link} onChange={e => updateBanner(idx, 'link', e.target.value)} placeholder="#products-section" style={{ flex: 1, border: 'none', background: 'none', fontSize: '0.85rem', fontWeight: 700, outline: 'none' }} />
-                 </div>
+            <div key={idx} style={{ padding: '1.5rem', borderRadius: '24px', background: '#f8fafc', border: '1px solid #e2e8f0', position: 'relative' }}>
+              <button onClick={() => removeBanner(idx)} style={{ position: 'absolute', top: '1rem', right: '1rem', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}><Trash2 size={20} /></button>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '1.5rem' }}>
+                <ImageUploader value={banner.image} isUploading={uploading === idx} onFileSelect={file => handleUpload(file, 'banner', idx)} onUrlChange={val => updateBanner(idx, 'image', val)} height="150px" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <input value={banner.title} onChange={e => updateBanner(idx, 'title', e.target.value)} placeholder="Tiêu đề banner" style={{ padding: '0.7rem', borderRadius: '10px', border: '1px solid #e2e8f0' }} />
+                  <textarea value={banner.subtitle} onChange={e => updateBanner(idx, 'subtitle', e.target.value)} placeholder="Mô tả" rows={3} style={{ padding: '0.7rem', borderRadius: '10px', border: '1px solid #e2e8f0', resize: 'none' }} />
+                </div>
               </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                 <p style={{ fontSize: '0.75rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Nội dung chi tiết</p>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', background: '#fff', padding: '0.8rem 1.2rem', borderRadius: '14px', border: '1.5px solid #e2e8f0' }}>
-                    <Star size={18} color="var(--primary)" fill="var(--primary)" />
-                    <input value={banner.tag} onChange={e => updateBanner(idx, 'tag', e.target.value)} placeholder="TAG (Ví dụ: KHUYẾN MÃI)" style={{ border: 'none', background: 'none', fontWeight: 900, fontSize: '0.9rem', width: '100%', outline: 'none', color: 'var(--primary)' }} />
-                 </div>
-                 <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '0.5rem' }}>Tiêu đề chính (Header)</label>
-                    <input value={banner.title} onChange={e => updateBanner(idx, 'title', e.target.value)} style={{ width: '100%', padding: '1rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', background: '#fff', fontWeight: 900, fontSize: '1.3rem', color: '#1e293b' }} />
-                 </div>
-                 <div>
-                    <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '0.5rem' }}>Mô tả ngắn (Subtitle)</label>
-                    <textarea value={banner.subtitle} onChange={e => updateBanner(idx, 'subtitle', e.target.value)} rows={4} style={{ width: '100%', padding: '1rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', background: '#fff', fontSize: '0.95rem', color: '#64748b', resize: 'none', lineHeight: 1.5 }} />
-                 </div>
-              </div>
-            </motion.div>
+            </div>
           ))}
-        </div>
-
-        {/* Save Banners Button */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
-          <button 
-            onClick={handleSave} 
-            disabled={saving}
-            style={{ 
-              background: 'var(--gradient)', color: '#fff', 
-              padding: '1rem 3rem', borderRadius: '18px', 
-              border: 'none', fontWeight: 900, fontSize: '1rem',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.8rem',
-              boxShadow: '0 10px 30px rgba(212,96,10,0.25)',
-              transition: 'all 0.2s'
-            }}
-          >
-            {saving ? <Loader2 className="animate-spin" size={22} /> : <Save size={22} />}
-            Lưu Banners
-          </button>
         </div>
       </section>
     </div>

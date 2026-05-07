@@ -1,15 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Mail, Phone, Calendar, Trash2, Shield, User, Search, Loader2 } from 'lucide-react';
+import { Users, Mail, Phone, Calendar, Trash2, Shield, User, Search, Loader2, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import Link from 'next/link';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchUsers = async () => {
     try {
@@ -65,15 +74,27 @@ export default function AdminUsers() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b' }}>Quản lý người dùng</h1>
-          <p style={{ color: '#64748b' }}>Danh sách khách hàng và quản trị viên trong hệ thống.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {isMobile && (
+            <Link href="/admin" style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: '#fff', border: '1px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#64748b', textDecoration: 'none'
+            }}>
+              <ArrowLeft size={20} />
+            </Link>
+          )}
+          <div>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: 800, color: '#1e293b' }}>Quản lý người dùng</h1>
+            <p style={{ color: '#64748b', fontSize: isMobile ? '0.75rem' : '0.85rem' }}>Danh sách khách hàng và quản trị viên.</p>
+          </div>
         </div>
-        <div style={{ position: 'relative', width: '300px' }}>
+        <div style={{ position: 'relative', width: isMobile ? '100%' : '300px' }}>
           <Search style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
           <input 
             type="text" 
-            placeholder="Tìm theo tên, email, sđt..." 
+            placeholder="Tìm tên, email..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ 
@@ -86,23 +107,23 @@ export default function AdminUsers() {
       </header>
 
       {/* Stats Summary */}
-      <div style={{ display: 'flex', gap: '1.5rem' }}>
-        <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Users size={24} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ padding: '1.25rem', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', flex: 1, minWidth: '160px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Users size={20} />
           </div>
           <div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700 }}>TỔNG NGƯỜI DÙNG</p>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>{users.length}</h3>
+            <p style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700 }}>TỔNG SỐ</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>{users.length}</h3>
           </div>
         </div>
-        <div style={{ padding: '1.5rem', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', flex: 1, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Shield size={24} />
+        <div style={{ padding: '1.25rem', background: '#fff', borderRadius: '24px', border: '1px solid #e2e8f0', flex: 1, minWidth: '160px', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Shield size={20} />
           </div>
           <div>
-            <p style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700 }}>QUẢN TRỊ VIÊN</p>
-            <h3 style={{ fontSize: '1.4rem', fontWeight: 800 }}>{users.filter(u => u.role === 'admin').length}</h3>
+            <p style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700 }}>ADMIN</p>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>{users.filter(u => u.role === 'admin').length}</h3>
           </div>
         </div>
       </div>

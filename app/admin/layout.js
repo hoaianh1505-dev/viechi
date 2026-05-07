@@ -7,14 +7,18 @@ import {
   LayoutDashboard, Package, ShoppingBag, Users, 
   Settings, LogOut, ChevronLeft, ChevronRight,
   Truck, MessageSquare, Bell, Home, ArrowLeft,
-  Image as ImageIcon
+  Image as ImageIcon, Plus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '../../context/SettingsContext';
 import { useUser } from '../../context/UserContext';
 
 export default function AdminLayout({ children }) {
+  const { loading, isAdmin } = useUser();
+  const { settings } = useSettings();
   const [isMobile, setIsMobile] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
 
   React.useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -230,7 +234,17 @@ export default function AdminLayout({ children }) {
               <span style={{ fontWeight: 900, color: '#1e293b', fontSize: '1rem' }}>Admin</span>
             </Link>
           )}
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            {isMobile && (
+              <Link href="/admin/products?action=add" style={{ 
+                width: '36px', height: '36px', borderRadius: '10px', 
+                background: 'var(--gradient)', color: '#fff', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(212, 96, 10, 0.2)'
+              }}>
+                <Plus size={20} />
+              </Link>
+            )}
             <button style={{ position: 'relative', background: '#fff', border: '1px solid #ffe2cc', padding: '0.7rem', borderRadius: '14px', cursor: 'pointer', color: '#64748b', boxShadow: '0 2px 6px rgba(0,0,0,0.04)' }}>
               <Bell size={20} />
             </button>
@@ -247,38 +261,39 @@ export default function AdminLayout({ children }) {
       {isMobile && (
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
-          height: '70px', background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)', borderTop: '1px solid #ffe2cc',
-          display: 'flex', justifyContent: 'space-around', alignItems: 'center',
-          padding: '0 10px', zIndex: 1000, boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
+          height: '65px', background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(15px)', borderTop: '1px solid #ffe2cc',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '0 4px', zIndex: 1000, boxShadow: '0 -4px 20px rgba(0,0,0,0.05)'
         }}>
-          <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: pathname === '/admin' ? 'var(--primary)' : '#94a3b8' }}>
-            <LayoutDashboard size={20} />
-            <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>Tổng quan</span>
+          <Link href="/admin" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', color: pathname === '/admin' ? 'var(--primary)' : '#94a3b8', flex: 1, minWidth: 0 }}>
+            <LayoutDashboard size={18} />
+            <span style={{ fontSize: '0.55rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>Tổng quan</span>
           </Link>
-          <Link href="/admin/products" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: pathname === '/admin/products' ? 'var(--primary)' : '#94a3b8' }}>
-            <Package size={20} />
-            <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>Kho hàng</span>
-          </Link>
-          
-          <Link href="/admin/products?action=add" style={{ 
-            width: '50px', height: '50px', borderRadius: '18px', 
-            background: 'var(--gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', marginTop: '-30px', boxShadow: '0 8px 16px rgba(212, 96, 10, 0.3)',
-            border: '4px solid #fff'
-          }}>
-            <motion.div whileTap={{ scale: 0.9 }}>
-              <Package size={24} />
-            </motion.div>
+          <Link href="/admin/products" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', color: pathname === '/admin/products' ? 'var(--primary)' : '#94a3b8', flex: 1, minWidth: 0 }}>
+            <Package size={18} />
+            <span style={{ fontSize: '0.55rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>Kho hàng</span>
           </Link>
 
-          <Link href="/admin/orders" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: pathname === '/admin/orders' ? 'var(--primary)' : '#94a3b8' }}>
-            <ShoppingBag size={20} />
-            <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>Đơn hàng</span>
+          <Link href="/admin/shipping" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', color: pathname === '/admin/shipping' ? 'var(--primary)' : '#94a3b8', flex: 1, minWidth: 0 }}>
+            <div style={{ 
+              width: '32px', height: '32px', borderRadius: '10px', 
+              background: pathname === '/admin/shipping' ? 'var(--primary-light)' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: pathname === '/admin/shipping' ? 'var(--primary)' : '#94a3b8'
+            }}>
+              <Truck size={18} />
+            </div>
+            <span style={{ fontSize: '0.55rem', fontWeight: 800, whiteSpace: 'nowrap', color: pathname === '/admin/shipping' ? 'var(--primary)' : '#94a3b8' }}>Phí ship</span>
           </Link>
-          <Link href="/admin/settings" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', color: pathname === '/admin/settings' ? 'var(--primary)' : '#94a3b8' }}>
-            <Settings size={20} />
-            <span style={{ fontSize: '0.6rem', fontWeight: 800 }}>Cài đặt</span>
+
+          <Link href="/admin/orders" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', color: pathname === '/admin/orders' ? 'var(--primary)' : '#94a3b8', flex: 1, minWidth: 0 }}>
+            <ShoppingBag size={18} />
+            <span style={{ fontSize: '0.55rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>Đơn hàng</span>
+          </Link>
+          <Link href="/admin/settings" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', color: pathname === '/admin/settings' ? 'var(--primary)' : '#94a3b8', flex: 1, minWidth: 0 }}>
+            <Settings size={18} />
+            <span style={{ fontSize: '0.55rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%', textAlign: 'center' }}>Cài đặt</span>
           </Link>
         </div>
       )}

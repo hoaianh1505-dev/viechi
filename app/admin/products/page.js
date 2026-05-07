@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Package, X, Save, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Package, X, Save, Image as ImageIcon, Loader2, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import Swal from 'sweetalert2';
+import Link from 'next/link';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -205,9 +206,21 @@ export default function AdminProducts() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1.5rem' : '2rem', paddingBottom: isMobile ? '2rem' : 0 }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: 900, color: '#1e293b' }}>Sản phẩm</h1>
-          <p style={{ color: '#64748b', fontSize: '0.85rem' }}>{products.length} sản phẩm trong kho</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {isMobile && (
+            <Link href="/admin" style={{ 
+              width: '40px', height: '40px', borderRadius: '12px', 
+              background: '#f8fafc', border: '1px solid #e2e8f0',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#64748b', textDecoration: 'none'
+            }}>
+              <ArrowLeft size={20} />
+            </Link>
+          )}
+          <div>
+            <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: 900, color: '#1e293b' }}>Sản phẩm</h1>
+            <p style={{ color: '#64748b', fontSize: '0.85rem' }}>{products.length} sản phẩm trong kho</p>
+          </div>
         </div>
         {!isMobile && (
           <button 

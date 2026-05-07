@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import { useSettings } from '@/context/SettingsContext';
@@ -33,6 +33,9 @@ const Navbar = () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
+
+  const pathname = usePathname();
+  const isInsideAdmin = pathname?.startsWith('/admin');
 
   const handleLogout = async () => {
     await logout();
@@ -77,8 +80,8 @@ const Navbar = () => {
           </button>
         )}
 
-        {/* Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>
+        {/* Logo - Dynamic Link */}
+        <Link href={isInsideAdmin ? "/admin" : "/"} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', textDecoration: 'none' }} onClick={() => setMobileMenuOpen(false)}>
           <div style={{
             width: isMobile ? '36px' : '44px', 
             height: isMobile ? '36px' : '44px', 
@@ -91,7 +94,7 @@ const Navbar = () => {
             <span style={{ color: '#fff', fontWeight: 900, fontSize: isMobile ? '1.1rem' : '1.4rem' }}>{settings?.siteName?.charAt(0) || 'V'}</span>
           </div>
           <span style={{ fontWeight: 900, fontSize: isMobile ? '1.15rem' : '1.4rem', color: '#1e293b', letterSpacing: '-0.5px' }}>
-            {settings?.siteName || 'VietChi'}
+            {settings?.siteName || 'VietChi'} {isInsideAdmin && <span style={{ color: 'var(--primary)', fontSize: '0.8rem', fontWeight: 800, marginLeft: '0.3rem' }}>ADMIN</span>}
           </span>
         </Link>
 
@@ -119,6 +122,17 @@ const Navbar = () => {
 
         {/* Right Actions */}
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '0.8rem' }}>
+          {isAdmin && !isMobile && (
+            <Link href="/admin" style={{ 
+              padding: '0.5rem 1rem', borderRadius: '12px',
+              fontSize: '0.85rem', fontWeight: 800, color: '#0369a1',
+              background: '#f0f9ff', border: '1px solid #bae6fd',
+              textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem'
+            }}>
+              <LayoutDashboard size={16} /> Quản trị
+            </Link>
+          )}
+          
           {user && !isMobile && (
             <Link href="/my-orders" style={{ 
               padding: '0.5rem 1rem', borderRadius: '12px',

@@ -35,63 +35,101 @@ const HeroBanner = () => {
   return (
     <div className="hero-banner" style={{ 
       position: 'relative', 
-      height: '360px', 
+      height: '420px', 
       borderRadius: '32px', 
       overflow: 'hidden', 
       background: 'linear-gradient(135deg, #fff3ea 0%, #ffffff 100%)',
-      border: '1px solid #ffe2cc',
-      marginBottom: '2rem'
+      border: '1px solid rgba(212, 96, 10, 0.1)',
+      marginBottom: '2.5rem',
+      boxShadow: '0 20px 50px rgba(212, 96, 10, 0.08)'
     }}>
+      {/* Decorative Floating Particles */}
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ 
+            y: [0, Math.random() * -30, 0],
+            x: [0, Math.random() * 20, 0],
+            rotate: [0, 360],
+            opacity: [0.1, 0.3, 0.1]
+          }}
+          transition={{ 
+            duration: 5 + Math.random() * 5, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
+          style={{
+            position: 'absolute',
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            width: `${10 + Math.random() * 30}px`,
+            height: `${10 + Math.random() * 30}px`,
+            background: 'var(--gradient)',
+            borderRadius: '50%',
+            filter: 'blur(10px)',
+            zIndex: 1
+          }}
+        />
+      ))}
+
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="hero-split"
           style={{
             height: '100%',
-            display: 'grid',
-            gridTemplateColumns: currentBanner.image ? '1.2fr 1fr' : '1fr',
+            display: 'flex',
+            flexDirection: typeof window !== 'undefined' && window.innerWidth < 768 ? 'column' : 'row',
             alignItems: 'center',
-            padding: '0 4rem',
-            textAlign: currentBanner.image ? 'left' : 'center'
+            justifyContent: 'center',
+            padding: typeof window !== 'undefined' && window.innerWidth < 768 ? '2rem' : '0 5rem',
+            textAlign: typeof window !== 'undefined' && window.innerWidth < 768 ? 'center' : 'left',
+            gap: '2rem'
           }}
         >
           {/* Content Side */}
-          <div style={{ zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: currentBanner.image ? 'flex-start' : 'center' }}>
+          <div style={{ zIndex: 2, flex: 1, display: 'flex', flexDirection: 'column', alignItems: typeof window !== 'undefined' && window.innerWidth < 768 ? 'center' : 'flex-start' }}>
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.3 }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
+                gap: '0.6rem',
                 color: 'var(--primary)',
-                fontWeight: 800,
-                fontSize: '0.85rem',
-                marginBottom: '1rem',
+                fontWeight: 900,
+                fontSize: '0.8rem',
+                marginBottom: '1.2rem',
+                padding: '0.4rem 1rem',
+                background: 'var(--primary-light)',
+                borderRadius: '100px',
                 textTransform: 'uppercase',
-                letterSpacing: '1px'
+                letterSpacing: '1.5px',
+                border: '1px solid rgba(212, 96, 10, 0.1)'
               }}
             >
-              <Star size={16} fill="var(--primary)" /> {currentBanner.tag}
+              <Star size={14} fill="var(--primary)" /> {currentBanner.tag}
             </motion.div>
             
             <motion.h1
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="hero-title"
+              transition={{ delay: 0.4 }}
               style={{ 
-                fontSize: '2.8rem', 
+                fontSize: typeof window !== 'undefined' && window.innerWidth < 768 ? '2.2rem' : '3.5rem', 
                 fontWeight: 900, 
                 color: '#1e293b', 
-                lineHeight: 1.1, 
-                marginBottom: '1rem',
-                letterSpacing: '-1px'
+                lineHeight: 1.05, 
+                marginBottom: '1.2rem',
+                letterSpacing: '-1.5px',
+                background: 'linear-gradient(90deg, #1e293b, #d4600a)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
               }}
             >
               {currentBanner.title}
@@ -100,14 +138,14 @@ const HeroBanner = () => {
             <motion.p
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="hero-subtitle"
+              transition={{ delay: 0.5 }}
               style={{ 
-                fontSize: '1rem', 
+                fontSize: '1.1rem', 
                 color: '#64748b', 
-                marginBottom: '2rem', 
-                lineHeight: 1.6,
-                maxWidth: currentBanner.image ? '450px' : '650px'
+                marginBottom: '2.5rem', 
+                lineHeight: 1.7,
+                maxWidth: '500px',
+                fontWeight: 500
               }}
             >
               {currentBanner.subtitle}
@@ -116,79 +154,72 @@ const HeroBanner = () => {
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              transition={{ delay: 0.6 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <a href={currentBanner.link} className="btn btn-primary" style={{ 
-                padding: '1rem 2.5rem', 
-                borderRadius: '16px', 
+              <a href={currentBanner.link} style={{ 
+                padding: '1.1rem 3rem', 
+                borderRadius: '20px', 
                 fontSize: '1rem', 
-                fontWeight: 800, 
+                fontWeight: 900, 
                 display: 'inline-flex', 
                 alignItems: 'center', 
-                gap: '0.75rem',
-                boxShadow: '0 10px 25px rgba(212, 96, 10, 0.2)',
-                textDecoration: 'none'
+                gap: '0.8rem',
+                background: 'var(--gradient)',
+                color: '#fff',
+                boxShadow: '0 15px 35px rgba(212, 96, 10, 0.3)',
+                textDecoration: 'none',
+                transition: 'all 0.3s'
               }}>
-                Mua Ngay <ArrowRight size={20} />
+                Mua sắm ngay <ArrowRight size={22} />
               </a>
             </motion.div>
           </div>
 
-          {/* Image Side - ONLY IF IMAGE EXISTS */}
-          {currentBanner.image && (
-            <div className="hero-image-side" style={{ position: 'relative', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {/* Background Decorative Shapes */}
+          {/* Image Side */}
+          {currentBanner.image && (typeof window === 'undefined' || window.innerWidth >= 768) && (
+            <div style={{ position: 'relative', flex: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ 
                 position: 'absolute', 
-                width: '280px', 
-                height: '280px', 
+                width: '320px', height: '320px', 
                 borderRadius: '50%', 
-                background: '#ffe2cc', 
-                opacity: 0.5,
+                background: 'radial-gradient(circle, #ffe2cc 0%, rgba(255,255,255,0) 70%)',
                 zIndex: 0
               }} />
               
               <motion.div
-                initial={{ scale: 0.8, opacity: 0, rotate: 5 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ duration: 0.6, type: 'spring' }}
+                initial={{ rotate: 5, scale: 0.9, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
                 style={{ 
                   zIndex: 1,
-                  width: '320px',
-                  height: '260px',
-                  borderRadius: '24px',
+                  width: '380px', height: '300px',
+                  borderRadius: '32px',
                   overflow: 'hidden',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                  border: '8px solid #fff'
+                  boxShadow: '0 30px 60px rgba(0,0,0,0.12)',
+                  border: '10px solid #fff'
                 }}
               >
-                <img 
-                  src={currentBanner.image} 
-                  alt="Banner" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
+                <img src={currentBanner.image} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </motion.div>
 
-              {/* Floating Badge */}
+              {/* Floating Status Badge */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+                animate={{ y: [0, -12, 0] }}
+                transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
                 style={{
-                  position: 'absolute',
-                  top: '20%',
-                  right: '10%',
-                  background: '#fff',
-                  padding: '0.8rem 1.2rem',
-                  borderRadius: '16px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.6rem',
-                  zIndex: 2
+                  position: 'absolute', top: '10%', right: '5%',
+                  background: 'rgba(255,255,255,0.9)',
+                  backdropFilter: 'blur(10px)',
+                  padding: '1rem 1.5rem', borderRadius: '20px',
+                  boxShadow: '0 15px 30px rgba(0,0,0,0.06)',
+                  display: 'flex', alignItems: 'center', gap: '0.8rem',
+                  zIndex: 2, border: '1px solid rgba(255,255,255,0.5)'
                 }}
               >
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#22c55e' }} />
-                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#1e293b' }}>Đang bán chạy</span>
+                <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 10px #22c55e' }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 900, color: '#1e293b' }}>Hàng sẵn kho</span>
               </motion.div>
             </div>
           )}

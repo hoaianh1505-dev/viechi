@@ -28,6 +28,17 @@ export default function Home() {
   const { products, loading } = useProducts();
   const { settings } = useSettings();
 
+  useEffect(() => {
+    // Tự động cuộn xuống sản phẩm sau khi load xong 1.5s
+    const timer = setTimeout(() => {
+      const section = document.getElementById('products-section');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (loading) {
     return (
       <div style={{ 
@@ -64,6 +75,71 @@ export default function Home() {
       <div className="container" style={{ paddingTop: '1.5rem' }}>
         <HeroBanner />
       </div>
+
+      {/* ===== FEATURED CATEGORIES PROMAX ===== */}
+      <section style={{ padding: '2rem 0 3rem' }}>
+        <div className="container">
+          <div style={{ 
+            display: 'flex', 
+            gap: '1.25rem', 
+            overflowX: 'auto', 
+            padding: '0.5rem 0.2rem 1.5rem',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }} className="hide-scrollbar">
+            {[
+              { label: 'Khô Cá Đặc Sản', icon: Fish, color: '#d4600a', bg: '#fff7ed', desc: 'Đậm đà vị biển' },
+              { label: 'Khô Mực Loại 1', icon: Sparkles, color: '#0d9488', bg: '#f0fdfa', desc: 'Thơm ngon, dai ngọt' },
+              { label: 'Tôm Khô Thượng Hạng', icon: Zap, color: '#7c3aed', bg: '#f5f3ff', desc: 'Thịt chắc, màu đỏ tự nhiên' },
+              { label: 'Quà Biếu Cao Cấp', icon: Award, color: '#e11d48', bg: '#fff1f2', desc: 'Sang trọng & ý nghĩa' },
+              { label: 'Ưu Đãi Hôm Nay', icon: ShoppingBag, color: '#b45309', bg: '#fffbeb', desc: 'Giảm giá tới 30%' },
+            ].map((cat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                whileHover={{ y: -5 }}
+                style={{
+                  flex: '0 0 auto',
+                  width: '200px',
+                  padding: '1.5rem',
+                  borderRadius: '24px',
+                  background: '#fff',
+                  border: '1px solid #f1f5f9',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.8rem',
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <div style={{
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '16px',
+                  background: cat.bg,
+                  color: cat.color,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: `0 8px 16px ${cat.color}15`
+                }}>
+                  <cat.icon size={28} />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1e293b' }}>{cat.label}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>{cat.desc}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* ===== TRUST MARQUEE ===== */}
       <div className="hide-mobile" style={{ 
@@ -270,6 +346,77 @@ export default function Home() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== TESTIMONIALS PROMAX ===== */}
+      <section style={{ padding: '5rem 0', background: 'var(--bg-section)', overflow: 'hidden' }}>
+        <div className="container">
+          <Reveal>
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <div style={{ 
+                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                background: '#fff', padding: '0.4rem 1.2rem', 
+                borderRadius: '999px', marginBottom: '1.2rem',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+                border: '1px solid #f1f5f9'
+              }}>
+                <Heart size={14} color="#e11d48" fill="#e11d48" />
+                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '1px' }}>Khách hàng tin yêu</span>
+              </div>
+              <h2 style={{ fontSize: '2.4rem', fontWeight: 900, marginBottom: '0.8rem' }}>Đánh giá từ <span style={{ color: 'var(--primary)' }}>người dùng</span></h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.05rem' }}>Hơn 10,000+ khách hàng đã hài lòng với chất lượng dịch vụ của chúng tôi.</p>
+            </div>
+          </Reveal>
+
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+            gap: '2rem' 
+          }}>
+            {[
+              { name: 'Anh Tuấn', role: 'Đầu bếp khách sạn', content: 'Khô cá ở đây rất tươi, độ mặn vừa phải, phơi rất khéo. Tôi thường xuyên đặt cho nhà hàng của mình.', avatar: 'https://i.pravatar.cc/150?u=1' },
+              { name: 'Chị Lan', role: 'Nội trợ', content: 'Tôm khô to, ngọt tự nhiên, không hề có phẩm màu. Cả nhà mình ai cũng khen ngon khi nấu canh.', avatar: 'https://i.pravatar.cc/150?u=2' },
+              { name: 'Bác Hùng', role: 'Hưu trí', content: 'Dịch vụ giao hàng rất nhanh, đóng gói hút chân không cẩn thận, mang đi biếu quà rất sang trọng.', avatar: 'https://i.pravatar.cc/150?u=3' },
+            ].map((review, i) => (
+              <Reveal key={i} delay={i * 0.15}>
+                <motion.div
+                  whileHover={{ y: -10 }}
+                  style={{
+                    background: '#fff',
+                    padding: '2.5rem',
+                    borderRadius: '32px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.04)',
+                    border: '1px solid #f1f5f9',
+                    position: 'relative',
+                    height: '100%'
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: '4px', marginBottom: '1.2rem' }}>
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} fill="var(--accent)" color="var(--accent)" />
+                    ))}
+                  </div>
+                  <p style={{ 
+                    fontSize: '1rem', 
+                    color: '#475569', 
+                    lineHeight: 1.8, 
+                    fontStyle: 'italic',
+                    marginBottom: '2rem'
+                  }}>
+                    "{review.content}"
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img src={review.avatar} alt={review.name} style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <div>
+                      <h4 style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.1rem' }}>{review.name}</h4>
+                      <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>{review.role}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
