@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, Package, ShoppingBag, Users, 
   Settings, LogOut, ChevronLeft, ChevronRight,
@@ -11,11 +11,38 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettings } from '../../context/SettingsContext';
+import { useUser } from '../../context/UserContext';
 
 export default function AdminLayout({ children }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { settings } = useSettings();
+  const { user, isAdmin, loading, logout } = useUser();
+
+  // Kiểm tra quyền Admin
+  React.useEffect(() => {
+    if (!loading && !isAdmin) {
+      router.push('/');
+    }
+  }, [isAdmin, loading, router]);
+
+  // Trong khi đang kiểm tra quyền, hiển thị màn hình chờ
+  if (loading || !isAdmin) {
+    return (
+      <div style={{ 
+        height: '100vh', display: 'flex', alignItems: 'center', 
+        justifyContent: 'center', background: '#fff9f5', flexDirection: 'column', gap: '1rem' 
+      }}>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          style={{ width: '40px', height: '40px', border: '4px solid #ffe2cc', borderTopColor: 'var(--primary)', borderRadius: '50%' }}
+        />
+        <p style={{ color: 'var(--primary)', fontWeight: 600 }}>Đang kiểm tra quyền truy cập...</p>
+      </div>
+    );
+  }
 
   const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, path: '/admin' },

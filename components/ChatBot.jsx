@@ -11,7 +11,18 @@ export default function ChatBot() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollRef = useRef(null);
+
+  // Check for mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Load history from localStorage
   useEffect(() => {
@@ -68,7 +79,7 @@ export default function ChatBot() {
     return content.split('\n').map((line, i) => (
       <span key={i}>
         {line.split('**').map((part, j) => (
-          j % 2 === 1 ? <strong key={j}>{part}</strong> : part
+          j % 2 === 1 ? <strong key={j} style={{ fontWeight: 800, color: 'inherit' }}>{part}</strong> : part
         ))}
         <br />
       </span>
@@ -82,51 +93,78 @@ export default function ChatBot() {
   ];
 
   return (
-    <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 1000 }}>
+    <div style={{ 
+      position: 'fixed', 
+      bottom: isMobile ? '1rem' : '2rem', 
+      right: isMobile ? '1rem' : '2rem', 
+      zIndex: 2000 
+    }}>
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
             style={{
-              position: 'absolute', bottom: '4.5rem', right: 0,
-              width: '380px', height: '550px',
-              background: '#fff', borderRadius: '24px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-              display: 'flex', flexDirection: 'column', overflow: 'hidden',
-              border: '1px solid var(--border-card)'
+              position: 'fixed', 
+              bottom: isMobile ? '0' : '5.5rem', 
+              right: isMobile ? '0' : '2rem',
+              width: isMobile ? '100vw' : '400px', 
+              height: isMobile ? '100vh' : '600px',
+              background: '#fff', 
+              borderRadius: isMobile ? '0' : '28px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+              display: 'flex', 
+              flexDirection: 'column', 
+              overflow: 'hidden',
+              border: isMobile ? 'none' : '1px solid rgba(212,96,10,0.1)',
+              zIndex: 2001
             }}
           >
             {/* Header */}
             <div style={{ 
-              background: 'var(--gradient)', padding: '1.25rem', 
-              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              background: 'var(--gradient)', 
+              padding: isMobile ? '1.5rem 1.25rem 1.25rem' : '1.25rem', 
+              color: '#fff', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              boxShadow: '0 4px 15px rgba(212,96,10,0.2)'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Bot size={22} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ 
+                  width: '42px', height: '42px', 
+                  borderRadius: '14px', 
+                  background: 'rgba(255,255,255,0.25)', 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backdropFilter: 'blur(4px)'
+                }}>
+                  <Bot size={24} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 800 }}>VietChi AI Advisor</h4>
-                  <p style={{ fontSize: '0.7rem', opacity: 0.8 }}>⚡ Phản hồi siêu tốc</p>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em' }}>VietChi AI Assistant</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ width: '6px', height: '6px', background: '#4ade80', borderRadius: '50%' }}></span>
+                    <p style={{ fontSize: '0.75rem', opacity: 0.9, fontWeight: 500 }}>Đang trực tuyến</p>
+                  </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button 
                   onClick={() => {
-                    if(confirm("Xóa lịch sử chat?")) {
+                    if(confirm("Xóa lịch sử trò chuyện?")) {
                       setMessages([{ role: 'model', content: 'Chào bạn! Mình đã sẵn sàng hỗ trợ lại từ đầu. 😊' }]);
                       localStorage.removeItem('vietchi_chat_history');
                     }
                   }} 
-                  title="Xóa lịch sử"
-                  style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.7 }}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px' }}
                 >
-                  <Loader2 size={16} />
+                  <Loader2 size={18} />
                 </button>
-                <button onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                <button 
+                  onClick={() => setIsOpen(false)} 
+                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px' }}
+                >
                   <X size={20} />
                 </button>
               </div>
@@ -135,54 +173,72 @@ export default function ChatBot() {
             {/* Messages Area */}
             <div 
               ref={scrollRef}
-              style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', background: '#f8fafc' }}
+              style={{ 
+                flex: 1, 
+                overflowY: 'auto', 
+                padding: '1.5rem 1.25rem', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: '1.5rem', 
+                background: '#fff9f5', // Tone cam nhạt đồng bộ web
+                scrollBehavior: 'smooth'
+              }}
             >
               {messages.map((msg, i) => (
-                <div key={i} style={{ 
-                  alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '85%',
-                  display: 'flex',
-                  gap: '0.6rem',
-                  flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
-                }}>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  key={i} 
+                  style={{ 
+                    alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                    maxWidth: isMobile ? '90%' : '85%',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
+                  }}
+                >
                   <div style={{ 
-                    width: '30px', height: '30px', borderRadius: '50%', 
+                    width: '32px', height: '32px', borderRadius: '10px', 
                     background: msg.role === 'user' ? 'var(--primary)' : '#fff',
                     color: msg.role === 'user' ? '#fff' : 'var(--primary)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                    flexShrink: 0
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    flexShrink: 0,
+                    border: msg.role === 'user' ? 'none' : '1px solid #ffe2cc'
                   }}>
-                    {msg.role === 'user' ? <User size={15} /> : <Bot size={15} />}
+                    {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
                   </div>
                   <div style={{ 
-                    padding: '0.85rem 1.1rem', 
-                    borderRadius: msg.role === 'user' ? '20px 4px 20px 20px' : '4px 20px 20px 20px',
+                    padding: '1rem 1.25rem', 
+                    borderRadius: msg.role === 'user' ? '22px 4px 22px 22px' : '4px 22px 22px 22px',
                     background: msg.role === 'user' ? 'var(--primary)' : '#fff',
-                    color: msg.role === 'user' ? '#fff' : 'var(--text-main)',
-                    fontSize: '0.9rem',
+                    color: msg.role === 'user' ? '#fff' : '#1e293b',
+                    fontSize: '0.95rem',
                     lineHeight: 1.6,
-                    boxShadow: '0 3px 10px rgba(0,0,0,0.04)',
+                    boxShadow: msg.role === 'user' ? '0 10px 20px -5px rgba(212,96,10,0.3)' : '0 4px 15px rgba(0,0,0,0.03)',
                     whiteSpace: 'pre-wrap'
                   }}>
                     {renderContent(msg.content)}
                   </div>
-                </div>
+                </motion.div>
               ))}
               
               {loading && (
-                <div style={{ alignSelf: 'flex-start', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-                  <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#fff', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-                    <Bot size={15} />
+                <div style={{ alignSelf: 'flex-start', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#fff', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #ffe2cc' }}>
+                    <Bot size={16} />
                   </div>
-                  <div style={{ padding: '0.85rem 1.25rem', background: '#fff', borderRadius: '4px 20px 20px 20px', boxShadow: '0 3px 10px rgba(0,0,0,0.04)' }}>
-                    <motion.div 
-                      animate={{ opacity: [0.4, 1, 0.4] }}
-                      transition={{ repeat: Infinity, duration: 1.5 }}
-                      style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}
-                    >
-                      AI đang suy nghĩ...
-                    </motion.div>
+                  <div style={{ padding: '0.85rem 1.25rem', background: '#fff', borderRadius: '4px 20px 20px 20px', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {[0, 1, 2].map(dot => (
+                        <motion.div
+                          key={dot}
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: dot * 0.1 }}
+                          style={{ width: '6px', height: '6px', background: 'var(--primary)', borderRadius: '50%', opacity: 0.6 }}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -190,25 +246,31 @@ export default function ChatBot() {
 
             {/* Quick Actions */}
             {!loading && (
-              <div style={{ padding: '0.75rem 1rem', background: '#f8fafc', display: 'flex', gap: '0.5rem', overflowX: 'auto', borderTop: '1px solid #edf2f7' }}>
+              <div style={{ 
+                padding: '0.85rem 1rem', 
+                background: '#fff', 
+                display: 'flex', 
+                gap: '0.6rem', 
+                overflowX: 'auto', 
+                borderTop: '1px solid #fef2e8',
+                scrollbarWidth: 'none'
+              }}>
                 {quickActions.map((action, i) => (
                   <button
                     key={i}
                     onClick={() => handleSend(action.prompt)}
                     style={{
                       whiteSpace: 'nowrap',
-                      padding: '0.5rem 0.9rem',
-                      borderRadius: '999px',
-                      background: '#fff',
-                      border: '1px solid #e2e8f0',
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      color: 'var(--text-sub)',
+                      padding: '0.6rem 1.1rem',
+                      borderRadius: '100px',
+                      background: '#fef2e8',
+                      border: '1px solid #ffd8bf',
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      color: 'var(--primary)',
                       cursor: 'pointer',
                       transition: 'all 0.2s'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
-                    onMouseLeave={e => e.currentTarget.style.borderColor = '#e2e8f0'}
                   >
                     {action.label}
                   </button>
@@ -219,33 +281,38 @@ export default function ChatBot() {
             {/* Input Area */}
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
-              style={{ padding: '1rem', borderTop: '1px solid var(--border-card)', background: '#fff', display: 'flex', gap: '0.6rem' }}
+              style={{ 
+                padding: isMobile ? '1rem 1rem 2.5rem' : '1.25rem', 
+                borderTop: '1px solid #fef2e8', 
+                background: '#fff', 
+                display: 'flex', 
+                gap: '0.75rem' 
+              }}
             >
               <input 
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Hỏi VietChi AI bất cứ điều gì..."
+                placeholder="Hỏi bất cứ điều gì..."
                 style={{ 
-                  flex: 1, border: 'none', background: '#f1f5f9', 
-                  padding: '0.85rem 1.25rem', borderRadius: '14px', fontSize: '0.9rem',
+                  flex: 1, border: '1px solid #ffe2cc', background: '#fff', 
+                  padding: '0.9rem 1.25rem', borderRadius: '16px', fontSize: '1rem',
                   outline: 'none',
-                  transition: 'background 0.2s'
+                  transition: 'all 0.2s',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
                 }}
-                onFocus={e => e.target.style.background = '#e2e8f0'}
-                onBlur={e => e.target.style.background = '#f1f5f9'}
               />
               <button 
                 type="submit"
                 disabled={loading || !input.trim()}
                 style={{ 
-                  width: '46px', height: '46px', borderRadius: '14px', 
+                  width: '52px', height: '52px', borderRadius: '16px', 
                   background: 'var(--gradient)', color: '#fff', border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', opacity: (loading || !input.trim()) ? 0.5 : 1,
-                  boxShadow: '0 4px 10px rgba(212,96,10,0.2)'
+                  boxShadow: '0 8px 20px rgba(212,96,10,0.25)'
                 }}
               >
-                <Send size={20} />
+                <Send size={22} />
               </button>
             </form>
           </motion.div>
@@ -253,13 +320,15 @@ export default function ChatBot() {
       </AnimatePresence>
 
       <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          width: '60px', height: '60px', borderRadius: '50%',
+          width: isMobile ? '56px' : '64px', 
+          height: isMobile ? '56px' : '64px', 
+          borderRadius: '20px',
           background: 'var(--gradient)', color: '#fff', border: 'none',
-          boxShadow: '0 10px 30px rgba(212,96,10,0.3)',
+          boxShadow: '0 12px 30px rgba(212,96,10,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer'
         }}

@@ -5,16 +5,23 @@ import User from '@/models/User';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'vietchi_sieu_bao_mat_2024';
 
 async function checkAdmin() {
   const cookieStore = await cookies();
   const token = cookieStore.get('vietchi_token')?.value;
-  if (!token) return false;
+  
+  if (!token) {
+    console.log('Admin Check: Không tìm thấy token trong cookie');
+    return false;
+  }
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('Admin Check: Token hợp lệ, role:', decoded.role);
     return decoded.role === 'admin';
-  } catch {
+  } catch (err) {
+    console.error('Admin Check: Lỗi xác thực token:', err.message);
     return false;
   }
 }
