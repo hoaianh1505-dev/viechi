@@ -45,22 +45,6 @@ const ProductCard = ({ product }) => {
               style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
             />
             
-            {/* Hover Overlay */}
-            <div className="hover-overlay" style={{
-              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-              background: 'rgba(0,0,0,0.1)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              opacity: 0, transition: 'opacity 0.3s',
-              zIndex: 1
-            }}
-            onMouseEnter={e => e.target.style.opacity = 1}
-            onMouseLeave={e => e.target.style.opacity = 0}
-            >
-              <div style={{ background: '#fff', padding: '0.6rem', borderRadius: '50%', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}>
-                <Eye size={20} color="var(--primary)" />
-              </div>
-            </div>
-
             {/* Badges */}
             <div style={{ position: 'absolute', top: '0.6rem', left: '0.6rem', display: 'flex', flexDirection: 'column', gap: '0.35rem', zIndex: 2 }}>
               <span style={{ 

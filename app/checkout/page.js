@@ -22,6 +22,14 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 1024);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
     phone: '',
@@ -346,26 +354,31 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 0 5rem' }}>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', padding: isMobile ? '1rem 0 7rem' : '2rem 0 5rem' }}>
       <div className="container">
-        <header style={{ marginBottom: '2rem' }}>
+        <header style={{ marginBottom: isMobile ? '1.5rem' : '2rem' }}>
           <button onClick={() => router.back()} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: 'var(--text-muted)', fontWeight: 700, cursor: 'pointer', marginBottom: '1rem' }}>
-            <ArrowLeft size={18} /> Quay lại giỏ hàng
+            <ArrowLeft size={18} /> Quay lại
           </button>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#1e293b' }}>Thanh toán đơn hàng</h1>
+          <h1 style={{ fontSize: isMobile ? '1.6rem' : '2.2rem', fontWeight: 900, color: '#1e293b' }}>Thanh toán</h1>
         </header>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '2.5rem', alignItems: 'start' }} className="admin-grid-layout">
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? '1fr' : '1.4fr 1fr', 
+          gap: isMobile ? '1.5rem' : '2.5rem', 
+          alignItems: 'start' 
+        }}>
           
           {/* Left: Shipping Info */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+            <section style={{ background: '#fff', padding: isMobile ? '1.25rem' : '2rem', borderRadius: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ padding: '0.5rem', borderRadius: '10px', background: '#eff6ff', color: '#2563eb' }}><MapPin size={18} /></div>
                 Thông tin giao hàng
               </h3>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }} className="form-grid">
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '1rem' : '1.25rem' }}>
                 <div className="form-group">
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem' }}>Họ và tên người nhận</label>
                   <div style={{ position: 'relative' }}>
@@ -392,7 +405,8 @@ const CheckoutPage = () => {
                     />
                   </div>
                 </div>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+
+                <div className="form-group" style={{ gridColumn: isMobile ? 'auto' : 'span 2' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem' }}>Tỉnh / Thành phố</label>
                   <select
                     value={formData.province_code}
@@ -439,7 +453,7 @@ const CheckoutPage = () => {
                   </select>
                 </div>
 
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <div className="form-group" style={{ gridColumn: isMobile ? 'auto' : 'span 2' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem' }}>Số nhà, Tên đường</label>
                   <input
                     type="text"
@@ -449,7 +463,7 @@ const CheckoutPage = () => {
                     style={{ width: '100%', padding: '0.85rem 1rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem' }}
                   />
                 </div>
-                <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <div className="form-group" style={{ gridColumn: isMobile ? 'auto' : 'span 2' }}>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#64748b', marginBottom: '0.5rem' }}>Ghi chú thêm (Không bắt buộc)</label>
                   <textarea
                     rows={3}
@@ -462,7 +476,7 @@ const CheckoutPage = () => {
               </div>
             </section>
 
-            <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
+            <section style={{ background: '#fff', padding: isMobile ? '1.25rem' : '2rem', borderRadius: '28px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ padding: '0.5rem', borderRadius: '10px', background: '#fef3c7', color: '#d97706' }}><CreditCard size={18} /></div>
                 Phương thức thanh toán
@@ -511,21 +525,31 @@ const CheckoutPage = () => {
           </div>
 
           {/* Right: Order Summary */}
-          <div style={{ position: 'sticky', top: '100px' }}>
-            <div style={{ background: 'var(--text-main)', padding: '2rem', borderRadius: '32px', color: '#fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 900, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
+          <div style={{ position: isMobile ? 'static' : 'sticky', top: '100px' }}>
+            <div style={{ background: 'var(--text-main)', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '32px', color: '#fff', boxShadow: '0 20px 40px rgba(0,0,0,0.1)' }}>
+              <h3 style={{ fontSize: isMobile ? '1rem' : '1.2rem', fontWeight: 900, marginBottom: isMobile ? '1rem' : '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.75rem' }}>
                 <ShoppingBag size={20} /> Tóm tắt đơn hàng
               </h3>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                flexDirection: isMobile ? 'row' : 'column', 
+                gap: '1rem', 
+                marginBottom: isMobile ? '1.5rem' : '2rem', 
+                maxHeight: isMobile ? 'none' : '300px', 
+                overflowX: isMobile ? 'auto' : 'visible', 
+                overflowY: isMobile ? 'visible' : 'auto',
+                paddingBottom: isMobile ? '0.5rem' : '0',
+                scrollbarWidth: 'none'
+              }}>
                 {cart.map((item) => (
-                  <div key={item._id || item.id} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <img src={item.image} alt={item.name} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} />
+                  <div key={item._id || item.id} style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexShrink: 0, width: isMobile ? '240px' : 'auto', background: isMobile ? 'rgba(255,255,255,0.05)' : 'none', padding: isMobile ? '0.75rem' : '0', borderRadius: isMobile ? '16px' : '0' }}>
+                    <img src={item.image} alt={item.name} style={{ width: isMobile ? '40px' : '50px', height: isMobile ? '40px' : '50px', borderRadius: '10px', objectFit: 'cover' }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)' }}>{item.quantity} x {item.price?.toLocaleString()}đ</div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{item.name}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>{item.quantity} x {item.price?.toLocaleString()}đ</div>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: '0.85rem' }}>{(item.price * item.quantity).toLocaleString()}đ</div>
+                    {!isMobile && <div style={{ fontWeight: 800, fontSize: '0.85rem' }}>{(item.price * item.quantity).toLocaleString()}đ</div>}
                   </div>
                 ))}
               </div>
@@ -577,6 +601,39 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      {/* STICKY BOTTOM BAR FOR MOBILE */}
+      {isMobile && (
+        <motion.div 
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          style={{ 
+            position: 'fixed', bottom: 0, left: 0, right: 0, 
+            background: '#fff', padding: '1rem', 
+            boxShadow: '0 -10px 30px rgba(0,0,0,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            zIndex: 100, borderTop: '1px solid #f1f5f9'
+          }}
+        >
+          <div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Tổng thanh toán</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)' }}>{finalTotal.toLocaleString()}đ</div>
+          </div>
+          <button 
+            onClick={handleSubmit}
+            disabled={loading}
+            style={{ 
+              padding: '1rem 2rem', borderRadius: '16px', 
+              background: 'var(--gradient)', color: '#fff', border: 'none',
+              fontSize: '1rem', fontWeight: 900,
+              boxShadow: '0 8px 20px rgba(212,96,10,0.2)',
+              opacity: loading ? 0.7 : 1
+            }}
+          >
+            {loading ? 'Đang đặt...' : 'Đặt hàng ngay'}
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 };

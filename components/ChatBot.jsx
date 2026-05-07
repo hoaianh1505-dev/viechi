@@ -3,8 +3,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, User, Bot, Loader2 } from 'lucide-react';
+import { useUser } from '@/context/UserContext';
 
 export default function ChatBot() {
+  const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'model', content: 'Chào bạn! Mình là VietChi AI. Mình có thể giúp gì cho bạn trong việc lựa chọn đặc sản hôm nay nhỉ? 😊' }
@@ -41,11 +43,19 @@ export default function ChatBot() {
     localStorage.setItem('vietchi_chat_history', JSON.stringify(messages));
   }, [messages]);
 
+  // Auto scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollContainer = scrollRef.current;
+      // Sử dụng setTimeout để đảm bảo DOM đã cập nhật chiều cao mới nhất
+      setTimeout(() => {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: 'smooth'
+        });
+      }, 100);
     }
-  }, [messages, loading]);
+  }, [messages, loading, isOpen]);
 
   const handleSend = async (textInput) => {
     const text = textInput || input;
@@ -60,7 +70,10 @@ export default function ChatBot() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMsg] })
+        body: JSON.stringify({ 
+          messages: [...messages, userMsg],
+          user: user // Gửi thông tin user hiện tại (có thể là admin)
+        })
       });
       const data = await res.json();
       if (data.content) {
@@ -87,9 +100,24 @@ export default function ChatBot() {
   };
 
   const quickActions = [
-    { label: '🚚 Kiểm tra đơn hàng', prompt: 'Tôi muốn kiểm tra trạng thái đơn hàng' },
-    { label: '🎁 Tư vấn quà biếu', prompt: 'Tư vấn cho tôi các loại khô làm quà biếu sang trọng' },
-    { label: '🔥 Món bán chạy nhất', prompt: 'Hiện tại loại khô nào đang bán chạy nhất?' },
+    { label: '🚚 Kiểm tra đơn hàng', prompt: 'Tôi muốn kiểm tra trạng thái đơn hàng của mình' },
+    { label: '🔥 Bán chạy nhất', prompt: 'Sản phẩm nào đang bán chạy nhất tại cửa hàng?' },
+    { label: '🎁 Tư vấn quà biếu', prompt: 'Tư vấn cho tôi các loại đặc sản làm quà biếu sang trọng' },
+    { label: '💰 Phí vận chuyển', prompt: 'Phí vận chuyển được tính như thế nào?' },
+    { label: '⏳ Thời gian giao hàng', prompt: 'Giao hàng về tỉnh mất bao lâu thì nhận được?' },
+    { label: '🦐 Tôm khô loại 1', prompt: 'Cửa hàng mình có tôm khô loại 1 cao cấp không?' },
+    { label: '📦 Hút chân không', prompt: 'Các sản phẩm có được đóng gói hút chân không không?' },
+    { label: '👁️ Kiểm tra hàng', prompt: 'Tôi có được kiểm tra hàng trước khi thanh toán không?' },
+    { label: '💳 Thanh toán', prompt: 'Cửa hàng hỗ trợ những hình thức thanh toán nào?' },
+    { label: '🧧 Khuyến mãi', prompt: 'Hôm nay có chương trình khuyến mãi gì đặc biệt không?' },
+    { label: '❄️ Cách bảo quản', prompt: 'Hướng dẫn tôi cách bảo quản các loại khô để được lâu' },
+    { label: '🧾 Hóa đơn đỏ', prompt: 'Bên mình có hỗ trợ xuất hóa đơn VAT không?' },
+    { label: '🏢 Giá sỉ', prompt: 'Tôi muốn mua số lượng lớn, chính sách giá sỉ thế nào?' },
+    { label: '🧂 Độ mặn', prompt: 'Cửa hàng có loại khô nào mặn đậm đà hoặc mặn vừa không?' },
+    { label: '🥦 Ít mặn/Vị thanh', prompt: 'Tư vấn cho tôi các loại khô ít mặn, phù hợp cho người già hoặc người ăn kiêng' },
+    { label: '🗺️ Khẩu vị vùng miền', prompt: 'Khẩu vị miền Bắc và miền Trung thì nên chọn loại đặc sản nào?' },
+    { label: '🛶 Đặc sản miền Tây', prompt: 'Những món khô nào là đặc sản chính gốc miền Tây bán chạy nhất?' },
+    { label: '📍 Địa chỉ', prompt: 'Cửa hàng mình có địa chỉ ở đâu?' },
   ];
 
   return (
@@ -163,28 +191,33 @@ export default function ChatBot() {
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', margin: 0 }}>VietChi AI Assistant</h4>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ width: '6px', height: '6px', background: '#4ade80', borderRadius: '50%' }}></span>
-                    <p style={{ fontSize: '0.75rem', opacity: 0.9, fontWeight: 500, margin: 0 }}>Đang trực tuyến</p>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', margin: 0 }}>VietChi Super AI</h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <motion.span 
+                      animate={{ opacity: [1, 0.4, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      style={{ width: '8px', height: '8px', background: '#4ade80', borderRadius: '50%', boxShadow: '0 0 10px #4ade80' }}
+                    ></motion.span>
+                    <p style={{ fontSize: '0.75rem', opacity: 0.9, fontWeight: 600, margin: 0 }}>Sẵn sàng tư vấn 24/7</p>
                   </div>
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button 
                   onClick={() => {
-                    if(confirm("Xóa lịch sử trò chuyện?")) {
-                      setMessages([{ role: 'model', content: 'Chào bạn! Mình đã sẵn sàng hỗ trợ lại từ đầu. 😊' }]);
+                    if(confirm("Xóa toàn bộ lịch sử trò chuyện?")) {
+                      setMessages([{ role: 'model', content: 'Chào bạn! Siêu trợ lý VietChi đã sẵn sàng hỗ trợ lại từ đầu. Mình có thể giúp gì cho bạn? 😊' }]);
                       localStorage.removeItem('vietchi_chat_history');
                     }
                   }} 
-                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px', display: 'flex' }}
+                  title="Xóa lịch sử"
+                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '10px', borderRadius: '12px', display: 'flex', transition: '0.2s' }}
                 >
                   <Loader2 size={18} />
                 </button>
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px', display: 'flex' }}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '10px', borderRadius: '12px', display: 'flex' }}
                 >
                   <X size={20} />
                 </button>
@@ -197,47 +230,48 @@ export default function ChatBot() {
               style={{ 
                 flex: 1, 
                 overflowY: 'auto', 
-                padding: '1.5rem 1.25rem', 
+                padding: '1.75rem 1.25rem', 
                 display: 'flex', 
                 flexDirection: 'column', 
                 gap: '1.5rem', 
-                background: '#fff9f5', // Tone cam nhạt đồng bộ web
+                background: 'linear-gradient(to bottom, #fffcf9, #fff)', 
                 scrollBehavior: 'smooth'
               }}
             >
               {messages.map((msg, i) => (
                 <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
                   key={i} 
                   style={{ 
                     alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                    maxWidth: isMobile ? '90%' : '85%',
+                    maxWidth: isMobile ? '92%' : '85%',
                     display: 'flex',
                     gap: '0.75rem',
                     flexDirection: msg.role === 'user' ? 'row-reverse' : 'row'
                   }}
                 >
                   <div style={{ 
-                    width: '32px', height: '32px', borderRadius: '10px', 
-                    background: msg.role === 'user' ? 'var(--primary)' : '#fff',
+                    width: '36px', height: '36px', borderRadius: '12px', 
+                    background: msg.role === 'user' ? 'var(--gradient)' : '#fff',
                     color: msg.role === 'user' ? '#fff' : 'var(--primary)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                     flexShrink: 0,
-                    border: msg.role === 'user' ? 'none' : '1px solid #ffe2cc'
+                    border: msg.role === 'user' ? 'none' : '1px solid #fef2e8'
                   }}>
-                    {msg.role === 'user' ? <User size={16} /> : <Bot size={16} />}
+                    {msg.role === 'user' ? <User size={18} /> : <Bot size={20} />}
                   </div>
                   <div style={{ 
-                    padding: '1rem 1.25rem', 
-                    borderRadius: msg.role === 'user' ? '22px 4px 22px 22px' : '4px 22px 22px 22px',
-                    background: msg.role === 'user' ? 'var(--primary)' : '#fff',
+                    padding: '1.1rem 1.4rem', 
+                    borderRadius: msg.role === 'user' ? '24px 4px 24px 24px' : '4px 24px 24px 24px',
+                    background: msg.role === 'user' ? 'var(--gradient)' : '#fff',
                     color: msg.role === 'user' ? '#fff' : '#1e293b',
-                    fontSize: '0.95rem',
+                    fontSize: '0.98rem',
                     lineHeight: 1.6,
-                    boxShadow: msg.role === 'user' ? '0 10px 20px -5px rgba(212,96,10,0.3)' : '0 4px 15px rgba(0,0,0,0.03)',
-                    whiteSpace: 'pre-wrap'
+                    boxShadow: msg.role === 'user' ? '0 12px 25px -8px rgba(212,96,10,0.4)' : '0 8px 20px rgba(0,0,0,0.04)',
+                    whiteSpace: 'pre-wrap',
+                    border: msg.role === 'user' ? 'none' : '1px solid #fef2e8'
                   }}>
                     {renderContent(msg.content)}
                   </div>

@@ -27,6 +27,14 @@ const Reveal = ({ children, delay = 0 }) => {
 export default function Home() {
   const { products, loading } = useProducts();
   const { settings } = useSettings();
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     // Tự động cuộn xuống sản phẩm sau khi load xong 1.5s
@@ -78,10 +86,10 @@ export default function Home() {
 
 
       {/* ===== TRUST MARQUEE ===== */}
-      <div className="hide-mobile" style={{ 
+      <div style={{ 
         overflow: 'hidden', 
         background: '#1c0f06',
-        padding: '0.9rem 0',
+        padding: isMobile ? '0.6rem 0' : '0.9rem 0',
         position: 'relative'
       }}>
         <motion.div
@@ -104,7 +112,7 @@ export default function Home() {
       </div>
 
       {/* ===== PRODUCT SECTION ===== */}
-      <section id="products-section" style={{ background: 'var(--bg)', padding: '4rem 0' }}>
+      <section id="products-section" style={{ background: 'var(--bg)', padding: isMobile ? '2.5rem 0' : '4rem 0' }}>
         <div className="container">
           <Reveal>
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
@@ -117,10 +125,10 @@ export default function Home() {
                 <Sparkles size={14} color="var(--primary)" />
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tuyển chọn đặc biệt</span>
               </div>
-              <h2 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '0.75rem', lineHeight: 1.1 }}>
+              <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.2rem', fontWeight: 900, marginBottom: '0.75rem', lineHeight: 1.1 }}>
                 Sản phẩm <span style={{ color: 'var(--primary)' }}>nổi bật</span>
               </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1rem', maxWidth: '500px', margin: '0 auto' }}>
+              <p style={{ color: 'var(--text-muted)', fontSize: isMobile ? '0.9rem' : '1rem', maxWidth: '500px', margin: '0 auto' }}>
                 {products.length} sản phẩm chất lượng cao · Giao hàng tận nơi toàn quốc
               </p>
             </div>
@@ -153,10 +161,10 @@ export default function Home() {
       </section>
 
       {/* ===== WHY CHOOSE US ===== */}
-      <section className="hide-mobile" style={{ padding: '5rem 0', background: '#fff', overflow: 'hidden' }}>
+      <section style={{ padding: isMobile ? '3rem 0' : '5rem 0', background: '#fff', overflow: 'hidden' }}>
         <div className="container">
           <Reveal>
-            <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: isMobile ? '2rem' : '3.5rem' }}>
               <div style={{ 
                 display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                 background: '#f0fdfa', padding: '0.4rem 1.2rem', 
@@ -166,17 +174,17 @@ export default function Home() {
                 <Zap size={14} color="var(--teal)" />
                 <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--teal)', textTransform: 'uppercase', letterSpacing: '1px' }}>Cam kết chất lượng</span>
               </div>
-              <h2 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '0.75rem' }}>
+              <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.2rem', fontWeight: 900, marginBottom: '0.75rem' }}>
                 Vì sao chọn <span style={{ color: 'var(--primary)' }}>{settings?.siteName || 'VietChi'}?</span>
               </h2>
-              <p style={{ color: 'var(--text-muted)', maxWidth: '500px', margin: '0 auto' }}>Mỗi sản phẩm đều mang trong mình câu chuyện của biển cả và sự tận tâm.</p>
+              <p style={{ color: 'var(--text-muted)', maxWidth: '500px', margin: '0 auto', fontSize: isMobile ? '0.9rem' : '1rem' }}>Mỗi sản phẩm đều mang trong mình câu chuyện của biển cả và sự tận tâm.</p>
             </div>
           </Reveal>
           
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', 
-            gap: '1.5rem' 
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(240px, 1fr))', 
+            gap: isMobile ? '1rem' : '1.5rem' 
           }}>
             {[
               { icon: ShieldCheck, title: 'Chất Lượng Thượng Hạng', desc: 'Tuyển chọn kỹ lưỡng, đảm bảo tiêu chuẩn cao nhất từ nguồn nguyên liệu.', color: '#d4600a', bg: '#fff7ed' },
@@ -189,7 +197,7 @@ export default function Home() {
                   whileHover={{ y: -8, boxShadow: '0 20px 40px rgba(0,0,0,0.08)' }}
                   transition={{ type: 'spring', stiffness: 300 }}
                   style={{ 
-                    padding: '2.5rem 2rem', borderRadius: '28px',
+                    padding: isMobile ? '1.5rem' : '2.5rem 2rem', borderRadius: '28px',
                     background: '#fff',
                     border: '1px solid #f1f5f9',
                     cursor: 'default',
@@ -199,15 +207,15 @@ export default function Home() {
                   onMouseLeave={e => e.currentTarget.style.borderColor = '#f1f5f9'}
                 >
                   <div style={{ 
-                    width: '56px', height: '56px', borderRadius: '18px', 
+                    width: isMobile ? '48px' : '56px', height: isMobile ? '48px' : '56px', borderRadius: '18px', 
                     background: item.bg, color: item.color,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    marginBottom: '1.5rem'
+                    marginBottom: isMobile ? '1rem' : '1.5rem'
                   }}>
-                    <item.icon size={26} />
+                    <item.icon size={isMobile ? 22 : 26} />
                   </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '0.75rem', color: '#1e293b' }}>{item.title}</h3>
-                  <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.7 }}>{item.desc}</p>
+                  <h3 style={{ fontSize: isMobile ? '1rem' : '1.1rem', fontWeight: 800, marginBottom: '0.5rem', color: '#1e293b' }}>{item.title}</h3>
+                  <p style={{ color: '#64748b', fontSize: '0.85rem', lineHeight: 1.6 }}>{item.desc}</p>
                 </motion.div>
               </Reveal>
             ))}
@@ -216,10 +224,10 @@ export default function Home() {
       </section>
 
       {/* ===== STATS + BRAND STORY ===== */}
-      <section id="about" className="hide-mobile" style={{ padding: '5rem 0', background: 'var(--bg-section)' }}>
+      <section id="about" style={{ padding: isMobile ? '3rem 0' : '5rem 0', background: 'var(--bg-section)' }}>
         <div className="container">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: '1 1 400px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '2rem' : '4rem', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 300px' }}>
               <Reveal>
                 <div style={{ 
                   display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
@@ -230,27 +238,27 @@ export default function Home() {
                   <Star size={14} color="var(--accent)" fill="var(--accent)" />
                   <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '1px' }}>Câu chuyện thương hiệu</span>
                 </div>
-                <h2 style={{ fontSize: '2.2rem', fontWeight: 900, marginBottom: '1.5rem', lineHeight: 1.2 }}>
+                <h2 style={{ fontSize: isMobile ? '1.8rem' : '2.2rem', fontWeight: 900, marginBottom: '1.5rem', lineHeight: 1.2 }}>
                   {settings?.siteName || 'VietChi'} — <br />
                   <span style={{ color: 'var(--primary)' }}>Khẳng định đẳng cấp</span>
                 </h2>
-                <p style={{ color: 'var(--text-main)', fontSize: '1rem', lineHeight: 1.8, marginBottom: '2rem' }}>
+                <p style={{ color: 'var(--text-main)', fontSize: isMobile ? '0.9rem' : '1rem', lineHeight: 1.7, marginBottom: '2rem' }}>
                   {settings?.brandStory || 'Chúng tôi tự hào mang đến những sản phẩm tốt nhất cho khách hàng.'}
                 </p>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-                  <a href="#products-section" className="btn btn-primary" style={{ padding: '0.9rem 2rem', borderRadius: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: isMobile ? 'center' : 'flex-start' }}>
+                  <a href="#products-section" className="btn btn-primary" style={{ padding: '0.9rem 2rem', borderRadius: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                     Mua sắm ngay <ArrowRight size={18} />
                   </a>
                   {settings?.contactPhone && (
-                    <a href={`tel:${settings.contactPhone}`} className="btn btn-outline" style={{ padding: '0.9rem 2rem', borderRadius: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <a href={`tel:${settings.contactPhone}`} className="btn btn-outline" style={{ padding: '0.9rem 2rem', borderRadius: '14px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                       <Phone size={16} /> {settings.contactPhone}
                     </a>
                   )}
                 </div>
               </Reveal>
             </div>
-            <div style={{ flex: '1 1 400px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem' }}>
+            <div style={{ flex: '1 1 300px', width: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: isMobile ? '0.75rem' : '1.25rem' }}>
                 {[
                   { label: 'Khách hàng', value: '5,000+', icon: Users, color: '#096dd9', bg: '#e6f7ff' },
                   { label: 'Sản phẩm', value: `${products.length}+`, icon: Package, color: '#d4600a', bg: '#fff7e6' },
@@ -261,22 +269,22 @@ export default function Home() {
                     <motion.div 
                       whileHover={{ y: -5, scale: 1.02 }}
                       style={{ 
-                        background: '#fff', padding: '1.75rem', borderRadius: '24px',
+                        background: '#fff', padding: isMobile ? '1.25rem' : '1.75rem', borderRadius: '24px',
                         boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
                         textAlign: 'center', border: '1px solid var(--border-card)',
                         cursor: 'default'
                       }}
                     >
                       <div style={{ 
-                        width: '48px', height: '48px', borderRadius: '14px', 
+                        width: isMobile ? '40px' : '48px', height: isMobile ? '40px' : '48px', borderRadius: '14px', 
                         background: stat.bg, color: stat.color,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 1rem'
+                        margin: '0 auto 0.75rem'
                       }}>
-                        <stat.icon size={22} />
+                        <stat.icon size={isMobile ? 18 : 22} />
                       </div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--text-main)' }}>{stat.value}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginTop: '0.3rem', letterSpacing: '0.5px' }}>{stat.label}</div>
+                      <div style={{ fontSize: isMobile ? '1.1rem' : '1.5rem', fontWeight: 900, color: 'var(--text-main)' }}>{stat.value}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginTop: '0.2rem', letterSpacing: '0.5px' }}>{stat.label}</div>
                     </motion.div>
                   </Reveal>
                 ))}

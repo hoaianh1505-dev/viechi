@@ -27,6 +27,43 @@ const HeroBanner = () => {
     return () => clearInterval(timer);
   }, [banners.length]);
 
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  const scrollToProducts = (e) => {
+    e.preventDefault();
+    if (isScrolling) return;
+    setIsScrolling(true);
+
+    // Nếu ảnh chưa load xong, ta đợi một chút (tối đa 1s) rồi mới cuộn
+    const performScroll = () => {
+      const element = document.getElementById('products-section');
+      if (element) {
+        const offset = 80; // Trừ đi chiều cao Navbar
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = element.getBoundingClientRect().top;
+        const elementPosition = elementRect - bodyRect;
+        const offsetPosition = elementPosition - offset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+      setIsScrolling(false);
+    };
+
+    if (!imageLoaded) {
+      setTimeout(performScroll, 500); // Đợi 500ms cho ảnh kịp hiện
+    } else {
+      performScroll();
+    }
+  };
+
+  useEffect(() => {
+    setImageLoaded(false); // Reset mỗi khi đổi banner
+  }, [current]);
+
   const nextSlide = () => setCurrent((prev) => (prev + 1) % banners.length);
   const prevSlide = () => setCurrent((prev) => (prev - 1 + banners.length) % banners.length);
 
@@ -155,25 +192,30 @@ const HeroBanner = () => {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.6 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <a href={currentBanner.link} style={{ 
-                padding: '1.1rem 3rem', 
-                borderRadius: '20px', 
-                fontSize: '1rem', 
-                fontWeight: 900, 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: '0.8rem',
-                background: 'var(--gradient)',
-                color: '#fff',
-                boxShadow: '0 15px 35px rgba(212, 96, 10, 0.3)',
-                textDecoration: 'none',
-                transition: 'all 0.3s'
-              }}>
-                Mua sắm ngay <ArrowRight size={22} />
-              </a>
+              <button 
+                onClick={scrollToProducts}
+                disabled={isScrolling}
+                style={{ 
+                  padding: '1.2rem 3.5rem', 
+                  borderRadius: '24px', 
+                  fontSize: '1.1rem', 
+                  fontWeight: 900, 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '1rem',
+                  background: 'var(--gradient)',
+                  color: '#fff',
+                  boxShadow: '0 15px 40px rgba(212, 96, 10, 0.4)',
+                  border: 'none',
+                  cursor: isScrolling ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                }}
+              >
+                {isScrolling ? 'Đang chuẩn bị...' : 'Mua sắm ngay'} <ArrowRight size={22} />
+              </button>
             </motion.div>
           </div>
 
@@ -201,7 +243,12 @@ const HeroBanner = () => {
                   border: '10px solid #fff'
                 }}
               >
-                <img src={currentBanner.image} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img 
+                  src={currentBanner.image} 
+                  alt="Banner" 
+                  onLoad={() => setImageLoaded(true)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                />
               </motion.div>
 
               {/* Floating Status Badge */}
