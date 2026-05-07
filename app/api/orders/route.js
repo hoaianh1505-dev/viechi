@@ -42,11 +42,15 @@ export async function POST(req) {
       status: 'PENDING'
     });
 
-    // Clear Cart after successful order
-    await Cart.findOneAndUpdate(
-      { user: user.id },
-      { items: [], updatedAt: Date.now() }
-    );
+    // Clear Cart after successful order ONLY for COD. 
+    // For BANK_TRANSFER, we clear it in the webhook after payment confirmation.
+    if (paymentMethod === 'COD') {
+      await Cart.findOneAndUpdate(
+        { user: user.id },
+        { items: [], updatedAt: Date.now() },
+        { returnDocument: 'after' }
+      );
+    }
 
     return NextResponse.json({ 
       message: 'Đặt hàng thành công!', 

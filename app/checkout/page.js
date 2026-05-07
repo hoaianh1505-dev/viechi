@@ -8,7 +8,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { 
   ArrowLeft, ShieldCheck, Truck, CreditCard, 
   MapPin, Phone, User, MessageSquare, CheckCircle2,
-  ChevronRight, ShoppingBag
+  ChevronRight, ShoppingBag, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -182,9 +182,14 @@ const CheckoutPage = () => {
       const data = await res.json();
       if (res.ok) {
         setOrderSuccess(data.orderId);
-        clearCart();
-        localStorage.removeItem('vietchi_checkout_form'); // Clear saved form after success
-        toast.success('Đặt hàng thành công!');
+        setServerOrderData({ totalAmount: finalTotal }); // Khóa số tiền ngay lập tức
+        
+        // Nếu là COD thì xóa giỏ hàng và form ngay
+        if (formData.paymentMethod === 'COD') {
+          clearCart();
+          localStorage.removeItem('vietchi_checkout_form');
+          toast.success('Đặt hàng thành công!');
+        }
       } else {
         toast.error(data.message || 'Có lỗi xảy ra');
       }
@@ -195,9 +200,49 @@ const CheckoutPage = () => {
     }
   };
 
+  const [isPaid, setIsPaid] = useState(false);
+  const [serverOrderData, setServerOrderData] = useState(null);
+
+  // Polling order status for automated payment confirmation
+  useEffect(() => {
+    let interval;
+    if (orderSuccess && formData.paymentMethod === 'BANK_TRANSFER' && !isPaid) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/orders/${orderSuccess}`);
+          if (res.ok) {
+            const data = await res.json();
+            setServerOrderData(data); // Lưu dữ liệu đơn hàng từ server
+            if (data.paymentStatus === 'PAID' || data.status !== 'PENDING') {
+              setIsPaid(true);
+              clearInterval(interval);
+              
+              // Đã thanh toán xong -> Giờ mới xóa giỏ hàng và form
+              clearCart();
+              localStorage.removeItem('vietchi_checkout_form');
+              
+              toast.success('Xác nhận đã nhận được thanh toán!', { icon: '💰', duration: 5000 });
+              
+              // Tự động chuyển hướng về trang chủ sau 5 giây
+              setTimeout(() => {
+                router.push('/');
+              }, 5000);
+            }
+          }
+        } catch (e) {
+          console.error("Polling error:", e);
+        }
+      }, 5000); // Check every 5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [orderSuccess, formData.paymentMethod, isPaid, clearCart]);
+
   if (orderSuccess) {
+    // Lấy số tiền từ đơn hàng server (nếu có) để tránh lỗi khi F5 giỏ hàng trống
+    const displayTotal = serverOrderData?.totalAmount || finalTotal;
+    
     const qrUrl = formData.paymentMethod === 'BANK_TRANSFER' && settings?.bankAccount 
-      ? `https://img.vietqr.io/image/${settings.bankName}-${settings.bankAccount}-compact.png?amount=${finalTotal}&addInfo=THANHTOAN DONHANG ${orderSuccess.slice(-6).toUpperCase()}&accountName=${encodeURIComponent(settings.bankOwner)}`
+      ? `https://img.vietqr.io/image/${settings.bankName}-${settings.bankAccount}-compact.png?amount=${displayTotal}&addInfo=THANHTOAN DONHANG ${orderSuccess.slice(-6).toUpperCase()}&accountName=${encodeURIComponent(settings.bankOwner)}`
       : null;
 
     return (
@@ -211,38 +256,88 @@ const CheckoutPage = () => {
             boxShadow: '0 20px 50px rgba(0,0,0,0.05)', border: '1px solid var(--border-card)'
           }}
         >
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f0fdf4', color: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <CheckCircle2 size={40} />
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: isPaid ? '#f0fdf4' : '#eff6ff', color: isPaid ? '#16a34a' : '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            {isPaid ? <CheckCircle2 size={40} /> : <Clock size={40} className="animate-spin-slow" />}
           </div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '0.5rem', color: '#1e293b' }}>Đặt hàng thành công!</h1>
-          <p style={{ color: '#64748b', marginBottom: '2rem' }}>Mã đơn hàng: <span style={{ fontWeight: 800, color: 'var(--primary)' }}>#{orderSuccess.slice(-6).toUpperCase()}</span></p>
+          
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '0.5rem', color: '#1e293b' }}>
+            {isPaid ? 'Thanh toán thành công!' : 'Đặt hàng thành công!'}
+          </h1>
+          
+          <p style={{ color: '#64748b', marginBottom: '2rem' }}>
+            Mã đơn hàng: <span style={{ fontWeight: 800, color: 'var(--primary)' }}>#{orderSuccess.slice(-6).toUpperCase()}</span>
+          </p>
 
-          {qrUrl ? (
-            <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '24px', marginBottom: '2rem', border: '1px solid #e2e8f0' }}>
-              <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '1rem' }}>Quét mã QR để thanh toán ngay:</p>
-              <img src={qrUrl} alt="Payment QR" style={{ width: '200px', height: '200px', borderRadius: '12px', margin: '0 auto', display: 'block', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-              <div style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.8rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Tổng thanh toán:</span> <b style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>{finalTotal.toLocaleString()}đ</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Ngân hàng:</span> <b>{settings.bankName}</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Số TK:</span> <b>{settings.bankAccount}</b></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Chủ TK:</span> <b>{settings.bankOwner}</b></div>
+          {isPaid ? (
+            <div style={{ background: '#f0fdf4', padding: '2rem', borderRadius: '24px', marginBottom: '2rem', border: '1.5px solid #b91c1c10' }}>
+              <div style={{ color: '#16a34a', fontWeight: 800, fontSize: '1.1rem', marginBottom: '0.5rem' }}>Hệ thống đã nhận được tiền!</div>
+              <p style={{ fontSize: '0.85rem', color: '#15803d', marginBottom: '1rem' }}>VietChi đang chuẩn bị hàng và sẽ giao đến bạn trong thời gian sớm nhất.</p>
+              <div style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 700, padding: '0.5rem', background: '#dcfce7', borderRadius: '10px', display: 'inline-block' }}>
+                🚀 Đang chuyển hướng về trang chủ sau 5 giây...
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+                <Link href="/" className="btn btn-primary" style={{ padding: '1rem', borderRadius: '16px', fontWeight: 800, textDecoration: 'none' }}>
+                  Tiếp tục mua sắm
+                </Link>
+                <Link href="/orders" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none' }}>
+                  Xem lịch sử đơn hàng
+                </Link>
               </div>
             </div>
-          ) : (
-            <div style={{ background: '#f0f9ff', padding: '1.5rem', borderRadius: '20px', marginBottom: '2rem', textAlign: 'left', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <Truck size={24} color="#0369a1" />
-              <p style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 600 }}>Đơn hàng của bạn sẽ sớm được nhân viên VietChi liên hệ xác nhận và giao tận nơi.</p>
-            </div>
-          )}
+          ) : qrUrl ? (
+            <>
+              <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '24px', marginBottom: '2rem', border: '1px solid #e2e8f0', position: 'relative' }}>
+                <div style={{ 
+                  position: 'absolute', top: '10px', right: '10px', 
+                  background: 'var(--primary)', color: '#fff', 
+                  fontSize: '0.65rem', fontWeight: 800, padding: '4px 8px', borderRadius: '20px',
+                  display: 'flex', alignItems: 'center', gap: '4px'
+                }}>
+                  <span className="pulse-dot"></span> Đang chờ thanh toán...
+                </div>
+                
+                <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '1rem' }}>Quét mã QR để thanh toán ngay:</p>
+                <img src={qrUrl} alt="Payment QR" style={{ width: '200px', height: '200px', borderRadius: '12px', margin: '0 auto', display: 'block', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                
+                <div style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.8rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Tổng thanh toán:</span> <b style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>{displayTotal.toLocaleString()}đ</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Nội dung CK:</span> <b style={{ background: '#fffbeb', padding: '2px 6px', borderRadius: '4px', border: '1px dashed #f59e0b' }}>THANHTOAN DONHANG {orderSuccess.slice(-6).toUpperCase()}</b></div>
+                </div>
+              </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <Link href="/" className="btn btn-primary" style={{ padding: '1rem', borderRadius: '16px', fontWeight: 800, textDecoration: 'none' }}>
-              Tiếp tục mua sắm
-            </Link>
-            <Link href="/orders" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none' }}>
-              Xem lịch sử đơn hàng
-            </Link>
-          </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <p style={{ fontSize: '0.8rem', color: '#ef4444', fontWeight: 600 }}>* Vui lòng không đóng trang này cho đến khi thanh toán được xác nhận.</p>
+                <button 
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này và quay lại không?')) {
+                      await fetch(`/api/orders/${orderSuccess}/cancel`, { method: 'POST' });
+                      setOrderSuccess(null);
+                    }
+                  }}
+                  style={{ background: '#fff', border: '1.5px solid #fee2e2', color: '#ef4444', padding: '0.85rem', borderRadius: '16px', fontWeight: 700, cursor: 'pointer' }}
+                >
+                  Hủy đơn hàng & Quay lại
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ background: '#f0f9ff', padding: '1.5rem', borderRadius: '20px', marginBottom: '2rem', textAlign: 'left', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <Truck size={24} color="#0369a1" />
+                <p style={{ fontSize: '0.85rem', color: '#0369a1', fontWeight: 600 }}>Đơn hàng của bạn sẽ sớm được nhân viên VietChi liên hệ xác nhận và giao tận nơi.</p>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <Link href="/" className="btn btn-primary" style={{ padding: '1rem', borderRadius: '16px', fontWeight: 800, textDecoration: 'none' }}>
+                  Tiếp tục mua sắm
+                </Link>
+                <Link href="/orders" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none' }}>
+                  Xem lịch sử đơn hàng
+                </Link>
+              </div>
+            </>
+          )}
         </motion.div>
       </div>
     );

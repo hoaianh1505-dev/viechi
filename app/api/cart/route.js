@@ -51,7 +51,7 @@ export async function POST(req) {
     await Cart.findOneAndUpdate(
       { user: decoded.id },
       { items: dbItems },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
 
     return NextResponse.json({ message: 'Đã lưu giỏ hàng vào Database' });

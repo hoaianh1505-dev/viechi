@@ -2,14 +2,14 @@ import mongoose from 'mongoose';
 
 const SettingsSchema = new mongoose.Schema({
   siteName: { type: String, default: 'VietChi' },
-  siteTitle: { type: String, default: 'Hải Sản Khô Thượng Hạng' },
+  siteTitle: { type: String, default: 'Đặc Sản Đồng Tháp - Khô Cá Đồng Tháp Mười' },
   logo: { type: String, default: '' },
   favicon: { type: String, default: '' },
   
   // Contact Info
   contactEmail: { type: String, default: 'contact@vietchi.vn' },
   contactPhone: { type: String, default: '0909 123 456' },
-  contactAddress: { type: String, default: 'Rạch Giá, Kiên Giang' },
+  contactAddress: { type: String, default: 'Xã Mỹ Quý, Huyện Tháp Mười, Tỉnh Đồng Tháp' },
   googleMapsLink: { type: String, default: '' },
   workingHours: { type: String, default: '8:00 - 21:00 (Thứ 2 - Chủ Nhật)' },
 
@@ -20,11 +20,11 @@ const SettingsSchema = new mongoose.Schema({
   socialYoutube: { type: String, default: '' },
 
   // Marketing
-  announcementText: { type: String, default: 'Miễn phí vận chuyển cho đơn hàng trên 500k!' },
+  announcementText: { type: String, default: 'Đặc sản Tháp Mười - Giao hàng toàn quốc!' },
   announcementActive: { type: Boolean, default: true },
   
   // Content
-  brandStory: { type: String, default: 'VietChi mang đến những mẻ cá tươi ngon nhất từ vùng biển Kiên Giang.' },
+  brandStory: { type: String, default: 'VietChi tự hào mang đến những mẻ khô cá đồng tinh túy nhất từ vùng đất Tháp Mười sen hồng, giữ trọn hương vị phù sa và nắng gió Đồng Tháp.' },
   footerText: { type: String, default: '© 2024 VietChi - Đặc Sản Kiên Giang. Bảo lưu mọi quyền.' },
   aiRole: { type: String, default: 'Chuyên gia tư vấn hải sản khô nhiệt tình.' },
 
