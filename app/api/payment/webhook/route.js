@@ -19,18 +19,21 @@ export async function POST(req) {
     console.log('--- WEBHOOK DEBUG ---');
     console.log('Mã bảo mật nhận được:', apiKey);
     console.log('Data nhận được:', JSON.stringify(data, null, 2));
+
+    // Lấy số tiền từ mọi trường có thể có (SePay dùng amount hoặc amount_in)
+    const rawAmount = data.amount || data.amount_in || data.transferAmount || data.accumulated || 0;
+    const amount = Number(rawAmount);
     
-    // Tạm thời tắt kiểm tra API Key để test
+    const description = data.content || data.description || '';
+    console.log('Số tiền trích xuất:', amount, '| Nội dung:', description);
+    
+    // Tạm thời tắt kiểm tra API Key để test (Mở lại khi đã chạy ổn)
     /*
-    if (apiKey !== process.env.PAYMENT_WEBHOOK_KEY) {
-      console.error('Báo lỗi: API Key không khớp!');
+    if (!apiKey || apiKey !== process.env.PAYMENT_WEBHOOK_KEY) {
+      console.warn('Sai API Key:', apiKey);
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     */
-    console.log('Webhook nhận dữ liệu:', data);
-    
-    const description = data.content || data.description || '';
-    const amount = Number(data.amount || 0);
 
     // Tìm mã đơn hàng từ nội dung chuyển khoản
     const match = description.match(/DONHANG\s+([A-Z0-9]+)/i);
@@ -69,12 +72,14 @@ export async function POST(req) {
 
     // Xóa giỏ hàng của người dùng khi đã thanh toán xong
     try {
-      await Cart.findOneAndUpdate(
-        { user: order.user },
-        { items: [], updatedAt: Date.now() },
-        { upsert: true }
-      );
-      console.log('Đã xóa giỏ hàng cho user:', order.user);
+      if (order.user) {
+        await Cart.findOneAndUpdate(
+          { user: order.user },
+          { items: [], updatedAt: Date.now() },
+          { upsert: true }
+        );
+        console.log('Đã xóa giỏ hàng cho user:', order.user);
+      }
     } catch (cartErr) {
       console.error('Lỗi khi xóa giỏ hàng (không nghiêm trọng):', cartErr);
     }
