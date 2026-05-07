@@ -27,20 +27,12 @@ export async function POST(req) {
       return NextResponse.json({ message: 'Nội dung không hợp lệ' }, { status: 400 });
     }
 
-    const shortOrderId = match[1];
+    const shortOrderId = match[1].toUpperCase();
 
     // Tìm đơn hàng có mã khớp và trạng thái PENDING
-    // Vì chúng ta dùng 6 ký tự cuối, ta cần tìm trong DB đơn hàng có ID kết thúc bằng chuỗi này
-    const order = await Order.findOne({
-      paymentMethod: 'BANK_TRANSFER',
+    const order = await Order.findOne({ 
+      orderCode: shortOrderId,
       status: 'PENDING'
-    }).then(orders => {
-      // Vì MongoDB không dễ search suffix ID, ta tìm những đơn hàng PENDING gần đây rồi filter
-      // (Trong thực tế nên dùng một trường 'orderCode' riêng biệt để tối ưu)
-      return Order.findOne({ 
-        _id: { $regex: new RegExp(shortOrderId + '$', 'i') },
-        status: 'PENDING'
-      });
     });
 
     if (!order) {

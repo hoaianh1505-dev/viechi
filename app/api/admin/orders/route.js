@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
+import User from '@/models/User';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
@@ -48,7 +49,7 @@ export async function PATCH(req) {
     const updatedOrder = await Order.findByIdAndUpdate(
       orderId,
       { status },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!updatedOrder) {

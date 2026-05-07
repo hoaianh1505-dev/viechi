@@ -32,9 +32,13 @@ export async function POST(req) {
       return NextResponse.json({ message: 'Giỏ hàng trống' }, { status: 400 });
     }
 
+    // Generate unique short order code
+    const orderCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
     // Create Order
     const newOrder = await Order.create({
       user: user.id,
+      orderCode,
       items,
       shippingAddress,
       totalAmount,
@@ -54,7 +58,8 @@ export async function POST(req) {
 
     return NextResponse.json({ 
       message: 'Đặt hàng thành công!', 
-      orderId: newOrder._id 
+      orderId: newOrder._id,
+      orderCode: newOrder.orderCode
     }, { status: 201 });
 
   } catch (error) {

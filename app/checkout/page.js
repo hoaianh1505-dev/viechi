@@ -182,6 +182,7 @@ const CheckoutPage = () => {
       const data = await res.json();
       if (res.ok) {
         setOrderSuccess(data.orderId);
+        setOrderCode(data.orderCode);
         setServerOrderData({ totalAmount: finalTotal }); // Khóa số tiền ngay lập tức
         
         // Nếu là COD thì xóa giỏ hàng và form ngay
@@ -201,6 +202,7 @@ const CheckoutPage = () => {
   };
 
   const [isPaid, setIsPaid] = useState(false);
+  const [orderCode, setOrderCode] = useState('');
   const [serverOrderData, setServerOrderData] = useState(null);
 
   // Polling order status for automated payment confirmation
@@ -242,7 +244,7 @@ const CheckoutPage = () => {
     const displayTotal = serverOrderData?.totalAmount || finalTotal;
     
     const qrUrl = formData.paymentMethod === 'BANK_TRANSFER' && settings?.bankAccount 
-      ? `https://img.vietqr.io/image/${settings.bankName}-${settings.bankAccount}-compact.png?amount=${displayTotal}&addInfo=THANHTOAN DONHANG ${orderSuccess.slice(-6).toUpperCase()}&accountName=${encodeURIComponent(settings.bankOwner)}`
+      ? `https://img.vietqr.io/image/${settings.bankName}-${settings.bankAccount}-compact.png?amount=${displayTotal}&addInfo=THANHTOAN DONHANG ${orderCode}&accountName=${encodeURIComponent(settings.bankOwner)}`
       : null;
 
     return (
@@ -265,7 +267,7 @@ const CheckoutPage = () => {
           </h1>
           
           <p style={{ color: '#64748b', marginBottom: '2rem' }}>
-            Mã đơn hàng: <span style={{ fontWeight: 800, color: 'var(--primary)' }}>#{orderSuccess.slice(-6).toUpperCase()}</span>
+            Mã đơn hàng: <span style={{ fontWeight: 800, color: 'var(--primary)' }}>#{orderCode}</span>
           </p>
 
           {isPaid ? (
@@ -302,7 +304,7 @@ const CheckoutPage = () => {
                 
                 <div style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.8rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Tổng thanh toán:</span> <b style={{ color: 'var(--primary)', fontSize: '1.1rem' }}>{displayTotal.toLocaleString()}đ</b></div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Nội dung CK:</span> <b style={{ background: '#fffbeb', padding: '2px 6px', borderRadius: '4px', border: '1px dashed #f59e0b' }}>THANHTOAN DONHANG {orderSuccess.slice(-6).toUpperCase()}</b></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}><span>Nội dung CK:</span> <b style={{ background: '#fffbeb', padding: '2px 6px', borderRadius: '4px', border: '1px dashed #f59e0b' }}>THANHTOAN DONHANG {orderCode}</b></div>
                 </div>
               </div>
 

@@ -4,9 +4,9 @@ import Product from "@/models/Product";
 import Settings from "@/models/Settings";
 
 const MODELS_TO_TRY = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite", 
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-1.0-pro",
 ];
 
 async function callGemini(apiKey, model, prompt) {

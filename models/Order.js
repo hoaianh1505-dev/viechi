@@ -38,6 +38,11 @@ const OrderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  orderCode: {
+    type: String,
+    unique: true,
+    index: true
+  },
   status: {
     type: String,
     enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'],
