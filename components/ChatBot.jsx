@@ -99,53 +99,74 @@ export default function ChatBot() {
       right: isMobile ? '1rem' : '2rem', 
       zIndex: 2000 
     }}>
+      <motion.button
+        onClick={() => setIsOpen(!isOpen)}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        style={{
+          width: isMobile ? '50px' : '64px',
+          height: isMobile ? '50px' : '64px',
+          borderRadius: '50%',
+          background: 'var(--gradient)',
+          border: 'none',
+          color: '#fff',
+          cursor: 'pointer',
+          boxShadow: '0 10px 30px rgba(212, 96, 10, 0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}
+      >
+        {isOpen ? <X size={isMobile ? 20 : 32} /> : <MessageSquare size={isMobile ? 20 : 32} />}
+      </motion.button>
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20, transformOrigin: 'bottom right' }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={isMobile ? { y: '100%' } : { opacity: 0, y: 20, scale: 0.95 }}
+            animate={isMobile ? { y: 0 } : { opacity: 1, y: 0, scale: 1 }}
+            exit={isMobile ? { y: '100%' } : { opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             style={{
-              position: 'fixed', 
-              bottom: isMobile ? '0' : '5.5rem', 
-              right: isMobile ? '0' : '2rem',
-              width: isMobile ? '100vw' : '350px', 
-              height: isMobile ? '75vh' : '500px',
-              background: '#fff', 
-              borderRadius: isMobile ? '24px 24px 0 0' : '24px',
-              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-              display: 'flex', 
-              flexDirection: 'column', 
+              position: 'fixed',
+              bottom: isMobile ? 0 : '100px',
+              right: isMobile ? 0 : '30px',
+              width: isMobile ? '100%' : '400px',
+              height: isMobile ? '70vh' : '500px',
+              background: '#fff',
+              borderRadius: isMobile ? '32px 32px 0 0' : '28px',
+              boxShadow: '0 25px 60px -15px rgba(0,0,0,0.15)',
+              display: 'flex',
+              flexDirection: 'column',
               overflow: 'hidden',
-              border: isMobile ? 'none' : '1px solid rgba(212,96,10,0.1)',
-              zIndex: 2001
+              zIndex: 1001,
+              border: isMobile ? 'none' : '1px solid rgba(212, 96, 10, 0.1)'
             }}
           >
             {/* Header */}
-            <div style={{ 
-              background: 'var(--gradient)', 
-              padding: isMobile ? '1.5rem 1.25rem 1.25rem' : '1.25rem', 
-              color: '#fff', 
-              display: 'flex', 
-              alignItems: 'center', 
+            <div style={{
+              padding: isMobile ? '1rem' : '1.25rem',
+              background: 'var(--gradient)',
+              color: '#fff',
+              display: 'flex',
               justifyContent: 'space-between',
-              boxShadow: '0 4px 15px rgba(212,96,10,0.2)'
+              alignItems: 'center'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ 
-                  width: '42px', height: '42px', 
-                  borderRadius: '14px', 
-                  background: 'rgba(255,255,255,0.25)', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '40px', height: '40px', borderRadius: '12px', 
+                  background: 'rgba(255,255,255,0.2)', display: 'flex', 
+                  alignItems: 'center', justifyContent: 'center',
                   backdropFilter: 'blur(4px)'
                 }}>
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em' }}>VietChi AI Assistant</h4>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', margin: 0 }}>VietChi AI Assistant</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span style={{ width: '6px', height: '6px', background: '#4ade80', borderRadius: '50%' }}></span>
-                    <p style={{ fontSize: '0.75rem', opacity: 0.9, fontWeight: 500 }}>Đang trực tuyến</p>
+                    <p style={{ fontSize: '0.75rem', opacity: 0.9, fontWeight: 500, margin: 0 }}>Đang trực tuyến</p>
                   </div>
                 </div>
               </div>
@@ -157,13 +178,13 @@ export default function ChatBot() {
                       localStorage.removeItem('vietchi_chat_history');
                     }
                   }} 
-                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px' }}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px', display: 'flex' }}
                 >
                   <Loader2 size={18} />
                 </button>
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px' }}
+                  style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', cursor: 'pointer', padding: '8px', borderRadius: '10px', display: 'flex' }}
                 >
                   <X size={20} />
                 </button>
@@ -318,23 +339,6 @@ export default function ChatBot() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <motion.button
-        whileHover={{ scale: 1.05, y: -2 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
-        style={{
-          width: isMobile ? '56px' : '64px', 
-          height: isMobile ? '56px' : '64px', 
-          borderRadius: '20px',
-          background: 'var(--gradient)', color: '#fff', border: 'none',
-          boxShadow: '0 12px 30px rgba(212,96,10,0.4)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer'
-        }}
-      >
-        {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
-      </motion.button>
     </div>
   );
 }

@@ -47,32 +47,52 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Info */}
-          <div className="card-info" style={{ padding: '0.85rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div className="card-info" style={{ padding: '1rem 0.85rem' }}>
+            <h3 style={{ 
+              fontSize: '1rem', 
+              fontWeight: 800, 
+              marginBottom: '0.5rem', 
+              color: '#1e293b',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.4',
+              height: '2.8rem' // Cố định chiều cao cho 2 dòng để layout luôn đều
+            }}>
               {product.name}
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: '0.85rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: '2.1rem' }}>
+            <p style={{ 
+              color: '#64748b', 
+              fontSize: '0.78rem', 
+              marginBottom: '0.5rem', 
+              display: '-webkit-box', 
+              WebkitLineClamp: 2, 
+              WebkitBoxOrient: 'vertical', 
+              overflow: 'hidden', 
+              height: '2.1rem',
+              lineHeight: '1.4'
+            }}>
               {product.description || 'Đặc sản khô hải sản thơm ngon, chất lượng cao từ VietChi.'}
             </p>
           </div>
         </Link>
 
         {/* Price & Action (Dưới cùng) */}
-        <div style={{ padding: '0 0.75rem 0.75rem', marginTop: 'auto' }}>
+        <div style={{ padding: '0 0.85rem 1rem', marginTop: 'auto' }}>
           <div className="card-footer" style={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'space-between', 
-            paddingTop: '0.65rem', 
-            borderTop: '1px solid var(--border-card)',
-            gap: '0.4rem',
-            flexWrap: 'wrap'
+            paddingTop: '0.75rem', 
+            borderTop: '1px solid #f1f5f9',
+            gap: '0.5rem'
           }}>
-            <div className="price-tag" style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-              <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '0.95rem' }}>
+            <div className="price-tag" style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ color: 'var(--primary)', fontWeight: 900, fontSize: '1.1rem', lineHeight: 1 }}>
                 {product.price?.toLocaleString('vi-VN')}đ
               </span>
-              <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 600 }}>/{product.unit || 'kg'}</span>
+              <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, marginTop: '2px' }}>/{product.unit || 'kg'}</span>
             </div>
             
             <div className="action-btns" style={{ display: 'flex', gap: '0.6rem', flex: 1 }}>

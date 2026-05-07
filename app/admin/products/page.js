@@ -91,6 +91,24 @@ export default function AdminProducts() {
     </div>
   );
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    // Xử lý action=add từ URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('action') === 'add') {
+      handleOpenModal();
+      // Xóa params sau khi mở để không bị lặp lại khi load lại trang
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const fetchProducts = async () => {
     try {
       const res = await fetch('/api/products');
@@ -124,8 +142,11 @@ export default function AdminProducts() {
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Xác nhận xóa?',
+      text: "Hành động này không thể hoàn tác!",
       icon: 'warning',
       showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#94a3b8',
       confirmButtonText: 'Xóa ngay',
       cancelButtonText: 'Hủy'
     });
@@ -165,7 +186,7 @@ export default function AdminProducts() {
   };
 
   const addGalleryImage = () => {
-    setFormData({ ...formData, gallery: [...formData.gallery, ''] });
+    setFormData({ ...formData, gallery: [...(formData.gallery || []), ''] });
   };
 
   const updateGalleryImage = (index, value) => {
@@ -182,60 +203,94 @@ export default function AdminProducts() {
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '1.5rem' : '2rem', paddingBottom: isMobile ? '2rem' : 0 }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#1e293b' }}>Quản lý Sản phẩm</h1>
-          <p style={{ color: '#64748b' }}>Hỗ trợ nhiều ảnh cho mỗi sản phẩm.</p>
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '1.8rem', fontWeight: 900, color: '#1e293b' }}>Sản phẩm</h1>
+          <p style={{ color: '#64748b', fontSize: '0.85rem' }}>{products.length} sản phẩm trong kho</p>
         </div>
-        <button 
-          onClick={() => handleOpenModal()}
-          style={{ 
-            background: 'var(--primary)', color: '#fff', 
-            padding: '0.75rem 1.5rem', borderRadius: '12px', 
-            border: 'none', fontWeight: 700, cursor: 'pointer' 
-          }}
-        >
-          <Plus size={20} /> Thêm sản phẩm
-        </button>
+        {!isMobile && (
+          <button 
+            onClick={() => handleOpenModal()}
+            style={{ 
+              background: 'var(--primary)', color: '#fff', 
+              padding: '0.75rem 1.5rem', borderRadius: '14px', 
+              border: 'none', fontWeight: 800, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              boxShadow: '0 4px 12px rgba(212,96,10,0.2)'
+            }}
+          >
+            <Plus size={20} /> Thêm sản phẩm
+          </button>
+        )}
       </header>
 
-      <div style={{ background: '#fff', borderRadius: '24px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#f8fafc', textAlign: 'left', borderBottom: '1px solid #e2e8f0' }}>
-              <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.85rem' }}>ẢNH</th>
-              <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.85rem' }}>TÊN SẢN PHẨM</th>
-              <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.85rem' }}>GIÁ</th>
-              <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.85rem', textAlign: 'right' }}>THAO TÁC</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((p) => (
-              <tr key={p._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '1rem 1.25rem' }}>
-                  <img src={p.image} style={{ width: '50px', height: '50px', borderRadius: '10px', objectFit: 'cover' }} />
-                </td>
-                <td style={{ padding: '1.25rem' }}>
-                  <div style={{ fontWeight: 700 }}>{p.name}</div>
-                  {p.gallery?.length > 0 && (
-                    <div style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: '4px', fontWeight: 600 }}>
-                      + {p.gallery.length} ảnh phụ
-                    </div>
-                  )}
-                </td>
-                <td style={{ padding: '1.25rem' }}>{p.price?.toLocaleString()}đ</td>
-                <td style={{ padding: '1.25rem', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    <button onClick={() => handleOpenModal(p)} style={{ padding: '0.5rem', borderRadius: '8px', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}><Edit2 size={16} /></button>
-                    <button onClick={() => handleDelete(p._id)} style={{ padding: '0.5rem', borderRadius: '8px', border: 'none', background: '#fee2e2', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={16} /></button>
-                  </div>
-                </td>
+      {/* Main Content Area */}
+      {isMobile ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+          {products.map((p) => (
+            <motion.div 
+              key={p._id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{ 
+                background: '#fff', padding: '1rem', borderRadius: '24px', 
+                border: '1px solid #f1f5f9', display: 'flex', gap: '1rem',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.02)'
+              }}
+            >
+              <img src={p.image} style={{ width: '80px', height: '80px', borderRadius: '16px', objectFit: 'cover' }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <h3 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#1e293b', marginBottom: '0.25rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{p.name}</h3>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 900, color: 'var(--primary)' }}>{p.price?.toLocaleString()}đ</p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <button onClick={() => handleOpenModal(p)} style={{ flex: 1, padding: '0.6rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 700 }}>
+                    <Edit2 size={14} /> Sửa
+                  </button>
+                  <button onClick={() => handleDelete(p._id)} style={{ padding: '0.6rem', borderRadius: '10px', border: 'none', background: '#fee2e2', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ background: '#fff', borderRadius: '24px', overflow: 'hidden', border: '1px solid #f1f5f9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#f8fafc', textAlign: 'left', borderBottom: '1px solid #f1f5f9' }}>
+                <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>ẢNH</th>
+                <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>TÊN SẢN PHẨM</th>
+                <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase' }}>GIÁ</th>
+                <th style={{ padding: '1.25rem', color: '#64748b', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', textAlign: 'right' }}>THAO TÁC</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {products.map((p) => (
+                <tr key={p._id} style={{ borderBottom: '1px solid #f8fafc' }}>
+                  <td style={{ padding: '1rem 1.25rem' }}>
+                    <img src={p.image} style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover' }} />
+                  </td>
+                  <td style={{ padding: '1.25rem' }}>
+                    <div style={{ fontWeight: 800, color: '#1e293b' }}>{p.name}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Dùng {p.unit || 'kg'}</div>
+                  </td>
+                  <td style={{ padding: '1.25rem', fontWeight: 900, color: 'var(--primary)' }}>{p.price?.toLocaleString()}đ</td>
+                  <td style={{ padding: '1.25rem', textAlign: 'right' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                      <button onClick={() => handleOpenModal(p)} style={{ padding: '0.6rem', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer', color: '#64748b' }}><Edit2 size={16} /></button>
+                      <button onClick={() => handleDelete(p._id)} style={{ padding: '0.6rem', borderRadius: '10px', border: 'none', background: '#fee2e2', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <AnimatePresence>
         {isModalOpen && (
