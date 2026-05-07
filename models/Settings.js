@@ -28,6 +28,13 @@ const SettingsSchema = new mongoose.Schema({
   footerText: { type: String, default: '© 2024 VietChi - Đặc Sản Kiên Giang. Bảo lưu mọi quyền.' },
   aiRole: { type: String, default: 'Chuyên gia tư vấn hải sản khô nhiệt tình.' },
 
+  // Payment & Shipping
+  bankName: { type: String, default: '' },
+  bankAccount: { type: String, default: '' },
+  bankOwner: { type: String, default: '' },
+  shippingFee: { type: Number, default: 0 },
+  freeShippingThreshold: { type: Number, default: 0 },
+  
   // Banners Array
   banners: {
     type: [{

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Save, Image as ImageIcon, MessageSquare, Phone, Globe, Plus, Trash2, 
-  Loader2, Star, Link as LinkIcon, MapPin, Clock, Bell, Info, Compass, Layout
+  Loader2, Star, Link as LinkIcon, MapPin, Clock, Bell, Info, Compass, Layout, CreditCard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -131,6 +131,72 @@ export default function AdminSettings() {
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '2rem' }}>
+          {/* Payment Configuration */}
+          <section className="admin-section" style={{ background: '#fff', padding: '2.5rem', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid var(--border-card)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <CreditCard size={20} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--text-main)', lineHeight: 1.1 }}>Cấu hình Thanh toán</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>Thiết lập thông tin ngân hàng để nhận thanh toán qua QR</p>
+              </div>
+            </div>
+
+            <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }}>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Tên Ngân hàng (VD: Vietcombank)</label>
+                <input
+                  type="text"
+                  value={formData.bankName}
+                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  placeholder="VD: MB Bank, Techcombank..."
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
+                />
+              </div>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Số tài khoản</label>
+                <input
+                  type="text"
+                  value={formData.bankAccount}
+                  onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
+                  placeholder="Nhập số tài khoản của bạn"
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
+                />
+              </div>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Phí vận chuyển mặc định (VNĐ)</label>
+                <input
+                  type="number"
+                  value={formData.shippingFee}
+                  onChange={(e) => setFormData({ ...formData, shippingFee: Number(e.target.value) })}
+                  placeholder="VD: 30000"
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
+                />
+              </div>
+              <div className="form-group">
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Miễn phí ship khi đơn từ (VNĐ)</label>
+                <input
+                  type="number"
+                  value={formData.freeShippingThreshold}
+                  onChange={(e) => setFormData({ ...formData, freeShippingThreshold: Number(e.target.value) })}
+                  placeholder="VD: 500000"
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
+                />
+              </div>
+              <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Tên chủ tài khoản (Viết hoa không dấu)</label>
+                <input
+                  type="text"
+                  value={formData.bankOwner}
+                  onChange={(e) => setFormData({ ...formData, bankOwner: e.target.value })}
+                  placeholder="VD: NGUYEN VAN A"
+                  style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-card)', background: '#f8fafc', fontSize: '0.9rem' }}
+                />
+              </div>
+            </div>
+          </section>
+
         {/* Brand Section */}
         <section style={{ background: '#fff', padding: '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>

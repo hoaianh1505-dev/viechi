@@ -156,6 +156,7 @@ export default function ProductDetail() {
   const router = useRouter();
   const { products, contact, getId, loading } = useProducts();
   const { addToCart } = useCart();
+  const { user } = useUser();
   const [showContact, setShowContact] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const [quantity, setQuantity] = useState(1);

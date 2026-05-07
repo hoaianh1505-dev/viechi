@@ -23,6 +23,10 @@ const OrderSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     address: { type: String, required: true },
     city: String,
+    city_detail: String,
+    ward: String,
+    province_code: String,
+    fullAddress: String,
     note: String
   },
   paymentMethod: {

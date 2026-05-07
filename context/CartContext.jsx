@@ -12,11 +12,13 @@ export const CartProvider = ({ children }) => {
   const router = useRouter();
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const isInitialMount = useRef(true);
 
   // 1. Initial Load & Syncing from DB
   useEffect(() => {
     const fetchCartFromDB = async () => {
+      setLoading(true);
       if (user) {
         try {
           const res = await fetch('/api/cart');
@@ -31,6 +33,7 @@ export const CartProvider = ({ children }) => {
         // If user logs out, clear the local state immediately
         setCart([]);
       }
+      setLoading(false);
     };
     fetchCartFromDB();
   }, [user]);
@@ -112,6 +115,7 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={{ 
       cart, 
+      loading,
       addToCart, 
       removeFromCart, 
       updateQuantity, 

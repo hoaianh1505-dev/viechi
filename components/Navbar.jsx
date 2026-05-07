@@ -32,7 +32,7 @@ const Navbar = () => {
       background: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.75)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      borderBottom: scrolled ? '1px solid rgba(212,96,10,0.08)' : '1px solid transparent',
+      borderBottom: scrolled ? '1px solid rgba(212,96,10,0.08)' : '1px solid rgba(212,96,10,0)',
       boxShadow: scrolled ? '0 4px 30px rgba(0,0,0,0.06)' : 'none',
       position: 'sticky',
       top: 0,
@@ -93,7 +93,7 @@ const Navbar = () => {
               whiteSpace: 'nowrap'
             }}
             onMouseEnter={e => { e.target.style.background = 'var(--primary-light)'; e.target.style.color = 'var(--primary)'; }}
-            onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#475569'; }}
+            onMouseLeave={e => { e.target.style.background = 'rgba(212,96,10,0)'; e.target.style.color = '#475569'; }}
             >
               {item.label}
             </Link>
@@ -141,6 +141,23 @@ const Navbar = () => {
 
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+              <Link href="/orders" style={{ 
+                padding: '0.45rem 0.75rem',
+                borderRadius: '10px',
+                fontSize: '0.75rem',
+                fontWeight: 800,
+                color: '#475569',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                textDecoration: 'none',
+                display: 'flex', alignItems: 'center', gap: '0.35rem',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.color = '#475569'; }}
+              >
+                <ShoppingBag size={14} /> <span className="hide-mobile">Đơn hàng</span>
+              </Link>
+
               {isAdmin && (
                 <Link href="/admin" style={{ 
                   padding: '0.45rem 0.75rem',
