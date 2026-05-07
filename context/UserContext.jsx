@@ -9,22 +9,27 @@ export const UserProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in by checking a flag in localStorage or an API
     const checkUser = async () => {
       try {
-        const savedUser = localStorage.getItem('vietchi_user');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+        // Chỉ sử dụng dữ liệu từ server làm nguồn sự thật (Source of Truth)
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            setUser(data.user);
+          }
         }
-      } catch (e) {}
-      setLoading(false);
+      } catch (e) {
+        console.error('Lỗi kiểm tra user:', e);
+      } finally {
+        setLoading(false);
+      }
     };
     checkUser();
   }, []);
 
   const login = (userData) => {
     setUser(userData);
-    localStorage.setItem('vietchi_user', JSON.stringify(userData));
   };
 
   const logout = async () => {
@@ -32,7 +37,6 @@ export const UserProvider = ({ children }) => {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {}
     setUser(null);
-    localStorage.removeItem('vietchi_user');
   };
 
   return (

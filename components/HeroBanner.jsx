@@ -273,8 +273,8 @@ const HeroBanner = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation - Small & Subtle */}
-      {banners.length > 1 && (
+      {/* Navigation - Hidden on Mobile */}
+      {banners.length > 1 && (typeof window !== 'undefined' && window.innerWidth >= 768) && (
         <div style={{ 
           position: 'absolute', 
           bottom: '1.5rem', 

@@ -87,14 +87,30 @@ export default function ChatBot() {
     return () => clearTimeout(timer);
   }, []);
 
+  const [currentGreeting, setCurrentGreeting] = useState('Chào bạn! 😊');
+  const greetings = [
+    'Chào bạn! 😊',
+    'Cần tớ giúp gì không? 🤖',
+    'Chào bạn mới nhé! 👋',
+    'Ăn gì hôm nay nhỉ? 🦐',
+    'Tớ có mã giảm giá này! 🎁',
+    'Tớ ở đây hỗ trợ nhé! ✨',
+    'Chào bạn thân mến! ❤️',
+    'Đặc sản ngon lắm á! 😋'
+  ];
+
   // Periodic "Hello" Mode
   useEffect(() => {
     if (isOpen || isWalking) return;
 
     const interval = setInterval(() => {
+      // Chọn ngẫu nhiên câu chào
+      const rand = greetings[Math.floor(Math.random() * greetings.length)];
+      setCurrentGreeting(rand);
+      
       setIsHelloMode(true);
-      setTimeout(() => setIsHelloMode(false), 3500); 
-    }, 8500); 
+      setTimeout(() => setIsHelloMode(false), 2500); 
+    }, 5000); 
     
     return () => clearInterval(interval);
   }, [isOpen, isWalking]);
@@ -206,7 +222,7 @@ export default function ChatBot() {
     <motion.div 
       initial={{ x: '-50vw', opacity: 1 }}
       animate={{ x: 0, opacity: 1 }}
-      transition={{ duration: 8, ease: "linear" }}
+      transition={{ duration: 3, ease: "easeOut" }}
       style={{ 
         position: 'fixed', 
         bottom: isMobile ? '1rem' : '2rem', 
@@ -264,7 +280,7 @@ export default function ChatBot() {
               whiteSpace: 'nowrap', fontSize: '0.8rem', fontWeight: 800, color: '#1e293b'
             }}
           >
-            {isWalking ? 'Chờ tớ tí nhé... 🤖✨' : 'Chào bạn! 😊'}
+            {isWalking ? 'Chờ tớ tí nhé... 🤖✨' : currentGreeting}
             <div style={{ position: 'absolute', top: '50%', right: '-6px', transform: 'translateY(-50%)', width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderLeft: '6px solid #fff' }} />
           </motion.div>
         )}
