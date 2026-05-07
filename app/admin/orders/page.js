@@ -14,6 +14,14 @@ const AdminOrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -73,25 +81,40 @@ const AdminOrdersPage = () => {
   );
 
   return (
-    <div style={{ padding: '2rem', minHeight: '100vh', background: '#f8fafc' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
+    <div style={{ padding: isMobile ? '1rem' : '2rem', minHeight: '100vh', background: '#f8fafc' }}>
+      <header style={{ 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        justifyContent: 'space-between', 
+        alignItems: isMobile ? 'flex-start' : 'center', 
+        marginBottom: isMobile ? '1.5rem' : '2.5rem',
+        gap: '1.5rem'
+      }}>
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <ShoppingBag size={32} color="var(--primary)" /> Quản lý Đơn hàng
+          <h1 style={{ fontSize: isMobile ? '1.5rem' : '2rem', fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ShoppingBag size={isMobile ? 24 : 32} color="var(--primary)" /> Đơn hàng
           </h1>
-          <p style={{ color: '#64748b', marginTop: '0.25rem' }}>Theo dõi và xử lý các giao dịch từ khách hàng</p>
+          <p style={{ color: '#64748b', marginTop: '0.25rem', fontSize: isMobile ? '0.85rem' : '1rem' }}>Quản lý các giao dịch từ khách hàng</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.5rem', 
+          overflowX: 'auto', 
+          width: isMobile ? '100%' : 'auto',
+          paddingBottom: isMobile ? '0.5rem' : '0',
+          scrollbarWidth: 'none'
+        }}>
           {['ALL', 'PENDING', 'SHIPPED', 'DELIVERED'].map(s => (
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
               style={{
-                padding: '0.6rem 1.2rem', borderRadius: '12px', border: '1px solid #e2e8f0',
+                padding: '0.6rem 1.1rem', borderRadius: '12px', border: '1px solid #e2e8f0',
                 background: filterStatus === s ? 'var(--text-main)' : '#fff',
                 color: filterStatus === s ? '#fff' : '#64748b',
-                fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s'
+                fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                whiteSpace: 'nowrap'
               }}
             >
               {s === 'ALL' ? 'Tất cả' : getStatusInfo(s).label}
@@ -103,85 +126,136 @@ const AdminOrdersPage = () => {
       {loading ? (
         <div style={{ textAlign: 'center', padding: '5rem' }}>Đang tải dữ liệu...</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: selectedOrder ? '1fr 400px' : '1fr', gap: '2rem', transition: 'all 0.3s' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: (selectedOrder && !isMobile) ? '1fr 400px' : '1fr', 
+          gap: '2rem' 
+        }}>
           
-          {/* Orders List Table */}
-          <div style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-            <div className="table-container">
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
-                    <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>MÃ ĐƠN</th>
-                    <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>KHÁCH HÀNG</th>
-                    <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>NGÀY ĐẶT</th>
-                    <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>THANH TOÁN</th>
-                    <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>TRẠNG THÁI</th>
-                    <th style={{ padding: '1.25rem', textAlign: 'right', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>TỔNG TIỀN</th>
-                    <th style={{ padding: '1.25rem' }}></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredOrders.map(order => {
-                    const status = getStatusInfo(order.status);
-                    return (
-                      <tr key={order._id} 
-                        onClick={() => setSelectedOrder(order)}
-                        style={{ 
-                          borderBottom: '1px solid #f8fafc', cursor: 'pointer', 
-                          background: selectedOrder?._id === order._id ? 'var(--primary-light)' : 'transparent',
-                          transition: 'all 0.2s'
-                        }}
-                      >
-                        <td style={{ padding: '1.25rem', fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>
-                          #{order._id.slice(-6).toUpperCase()}
-                        </td>
-                        <td style={{ padding: '1.25rem' }}>
-                          <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.9rem' }}>{order.shippingAddress.fullName}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{order.shippingAddress.phone}</div>
-                        </td>
-                        <td style={{ padding: '1.25rem', fontSize: '0.85rem', color: '#64748b' }}>
-                          {new Date(order.createdAt).toLocaleDateString('vi-VN')}
-                        </td>
-                        <td style={{ padding: '1.25rem' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '0.3rem 0.6rem', borderRadius: '6px', background: order.paymentMethod === 'BANK_TRANSFER' ? '#eff6ff' : '#f8fafc', color: order.paymentMethod === 'BANK_TRANSFER' ? '#2563eb' : '#64748b' }}>
-                            {order.paymentMethod === 'BANK_TRANSFER' ? 'BANK' : 'COD'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '1.25rem' }}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', borderRadius: '999px', background: status.bg, color: status.color, fontSize: '0.75rem', fontWeight: 800 }}>
-                            <status.icon size={12} /> {status.label}
-                          </div>
-                        </td>
-                        <td style={{ padding: '1.25rem', textAlign: 'right', fontWeight: 900, color: '#1e293b' }}>
-                          {order.totalAmount.toLocaleString()}đ
-                        </td>
-                        <td style={{ padding: '1.25rem', textAlign: 'right' }}>
-                          <ChevronRight size={18} color="#cbd5e1" />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+          {/* Orders List Container */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {isMobile ? (
+              // Mobile Card Layout
+              filteredOrders.map(order => {
+                const status = getStatusInfo(order.status);
+                return (
+                  <motion.div
+                    whileTap={{ scale: 0.98 }}
+                    key={order._id}
+                    onClick={() => setSelectedOrder(order)}
+                    style={{
+                      background: '#fff', padding: '1.25rem', borderRadius: '20px',
+                      border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                      <span style={{ fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>
+                        #{order._id.slice(-6).toUpperCase()}
+                      </span>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.3rem 0.6rem', borderRadius: '999px', background: status.bg, color: status.color, fontSize: '0.7rem', fontWeight: 800 }}>
+                        <status.icon size={10} /> {status.label}
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem', marginBottom: '0.25rem' }}>{order.shippingAddress.fullName}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '1rem' }}>{new Date(order.createdAt).toLocaleDateString('vi-VN')} • {order.paymentMethod === 'BANK_TRANSFER' ? 'Chuyển khoản' : 'COD'}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '1rem', borderTop: '1px dashed #f1f5f9' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{order.items.length} sản phẩm</span>
+                      <span style={{ fontWeight: 900, color: '#1e293b', fontSize: '1.1rem' }}>{order.totalAmount.toLocaleString()}đ</span>
+                    </div>
+                  </motion.div>
+                );
+              })
+            ) : (
+              // Desktop Table Layout
+              <div style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                      <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>MÃ ĐƠN</th>
+                      <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>KHÁCH HÀNG</th>
+                      <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>NGÀY ĐẶT</th>
+                      <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>THANH TOÁN</th>
+                      <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>TRẠNG THÁI</th>
+                      <th style={{ padding: '1.25rem', textAlign: 'right', fontSize: '0.8rem', color: '#64748b', fontWeight: 800 }}>TỔNG TIỀN</th>
+                      <th style={{ padding: '1.25rem' }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.map(order => {
+                      const status = getStatusInfo(order.status);
+                      return (
+                        <tr key={order._id} 
+                          onClick={() => setSelectedOrder(order)}
+                          style={{ 
+                            borderBottom: '1px solid #f8fafc', cursor: 'pointer', 
+                            background: selectedOrder?._id === order._id ? 'var(--primary-light)' : 'transparent',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <td style={{ padding: '1.25rem', fontWeight: 800, color: 'var(--primary)', fontSize: '0.9rem' }}>
+                            #{order._id.slice(-6).toUpperCase()}
+                          </td>
+                          <td style={{ padding: '1.25rem' }}>
+                            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.9rem' }}>{order.shippingAddress.fullName}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{order.shippingAddress.phone}</div>
+                          </td>
+                          <td style={{ padding: '1.25rem', fontSize: '0.85rem', color: '#64748b' }}>
+                            {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                          </td>
+                          <td style={{ padding: '1.25rem' }}>
+                            <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '0.3rem 0.6rem', borderRadius: '6px', background: order.paymentMethod === 'BANK_TRANSFER' ? '#eff6ff' : '#f8fafc', color: order.paymentMethod === 'BANK_TRANSFER' ? '#2563eb' : '#64748b' }}>
+                              {order.paymentMethod === 'BANK_TRANSFER' ? 'BANK' : 'COD'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1.25rem' }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', borderRadius: '999px', background: status.bg, color: status.color, fontSize: '0.75rem', fontWeight: 800 }}>
+                              <status.icon size={12} /> {status.label}
+                            </div>
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'right', fontWeight: 900, color: '#1e293b' }}>
+                            {order.totalAmount.toLocaleString()}đ
+                          </td>
+                          <td style={{ padding: '1.25rem', textAlign: 'right' }}>
+                            <ChevronRight size={18} color="#cbd5e1" />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
-          {/* Order Details Sidebar */}
+          {/* Order Details Sidebar/Overlay */}
           <AnimatePresence>
             {selectedOrder && (
               <motion.div 
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: 20, opacity: 0 }}
+                initial={isMobile ? { y: '100%' } : { x: 20, opacity: 0 }}
+                animate={isMobile ? { y: 0 } : { x: 0, opacity: 1 }}
+                exit={isMobile ? { y: '100%' } : { x: 20, opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                 style={{ 
-                  background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', 
-                  padding: '1.5rem', boxShadow: '0 20px 40px rgba(0,0,0,0.05)',
-                  height: 'fit-content', position: 'sticky', top: '2rem'
+                  background: '#fff', 
+                  borderRadius: isMobile ? '32px 32px 0 0' : '28px', 
+                  border: '1px solid #f1f5f9', 
+                  padding: isMobile ? '2rem 1.5rem' : '1.5rem', 
+                  boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
+                  height: isMobile ? '90vh' : 'fit-content', 
+                  position: isMobile ? 'fixed' : 'sticky', 
+                  bottom: isMobile ? 0 : 'auto',
+                  left: isMobile ? 0 : 'auto',
+                  width: isMobile ? '100%' : 'auto',
+                  top: isMobile ? 'auto' : '2rem',
+                  zIndex: 3000,
+                  overflowY: 'auto'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <h3 style={{ fontWeight: 900, fontSize: '1.1rem' }}>Chi tiết đơn hàng</h3>
-                  <button onClick={() => setSelectedOrder(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><XCircle size={20} color="#94a3b8" /></button>
+                  <button onClick={() => setSelectedOrder(null)} style={{ background: '#f1f5f9', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <XCircle size={20} color="#94a3b8" />
+                  </button>
                 </div>
 
                 <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -212,24 +286,49 @@ const AdminOrdersPage = () => {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e293b' }}>Cập nhật trạng thái</label>
-                  <select 
-                    value={selectedOrder.status}
-                    onChange={(e) => updateStatus(selectedOrder._id, e.target.value)}
-                    style={{ width: '100%', padding: '0.75rem', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', fontWeight: 700 }}
-                  >
-                    <option value="PENDING">Chờ xử lý</option>
-                    <option value="PROCESSING">Đang chuẩn bị</option>
-                    <option value="SHIPPED">Đang giao hàng</option>
-                    <option value="DELIVERED">Đã giao thành công</option>
-                    <option value="CANCELLED">Hủy đơn hàng</option>
-                  </select>
+                {/* Status Update Section - Optimized for Mobile */}
+                <div style={{ marginTop: '2rem' }}>
+                  <label style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1e293b', marginBottom: '1rem', display: 'block' }}>Cập nhật trạng thái mới</label>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr', gap: '0.75rem' }}>
+                    {[
+                      { val: 'PENDING', label: 'Chờ xử lý', color: '#f59e0b', bg: '#fef3c7' },
+                      { val: 'PROCESSING', label: 'Chuẩn bị', color: '#2563eb', bg: '#eff6ff' },
+                      { val: 'SHIPPED', label: 'Giao hàng', color: '#7c3aed', bg: '#f5f3ff' },
+                      { val: 'DELIVERED', label: 'Đã giao', color: '#16a34a', bg: '#f0fdf4' },
+                      { val: 'CANCELLED', label: 'Hủy đơn', color: '#ef4444', bg: '#fef2f2' }
+                    ].map(st => (
+                      <motion.button
+                        key={st.val}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => updateStatus(selectedOrder._id, st.val)}
+                        style={{
+                          padding: '1rem 0.75rem',
+                          borderRadius: '16px',
+                          border: selectedOrder.status === st.val ? `2px solid ${st.color}` : '1px solid #e2e8f0',
+                          background: selectedOrder.status === st.val ? st.bg : '#fff',
+                          color: st.color,
+                          fontSize: '0.85rem',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          transition: 'all 0.2s',
+                          boxShadow: selectedOrder.status === st.val ? `0 4px 12px ${st.color}20` : 'none'
+                        }}
+                      >
+                        {st.label}
+                        {selectedOrder.status === st.val && <CheckCircle2 size={14} />}
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
 
-                <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px dashed #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px dashed #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontWeight: 700, color: '#64748b' }}>Tổng thanh toán:</span>
-                  <span style={{ fontWeight: 900, fontSize: '1.25rem', color: 'var(--primary)' }}>{selectedOrder.totalAmount.toLocaleString()}đ</span>
+                  <span style={{ fontWeight: 900, fontSize: '1.5rem', color: 'var(--primary)' }}>{selectedOrder.totalAmount.toLocaleString()}đ</span>
                 </div>
               </motion.div>
             )}
