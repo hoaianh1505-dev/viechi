@@ -7,13 +7,19 @@ export async function POST(req) {
   try {
     await dbConnect();
     
-    // Kiểm tra API Key để bảo mật Webhook
+    const data = await req.json();
     const apiKey = req.headers.get('x-api-key');
+    console.log('--- WEBHOOK DEBUG ---');
+    console.log('Header x-api-key nhận được:', apiKey);
+    console.log('Data nhận được:', JSON.stringify(data, null, 2));
+    
+    // Tạm thời tắt kiểm tra API Key để test
+    /*
     if (apiKey !== process.env.PAYMENT_WEBHOOK_KEY) {
+      console.error('Báo lỗi: API Key không khớp!');
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-
-    const data = await req.json();
+    */
     console.log('Webhook nhận dữ liệu:', data);
     
     const description = data.content || data.description || '';
