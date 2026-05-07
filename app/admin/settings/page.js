@@ -196,6 +196,45 @@ export default function AdminSettings() {
             </div>
           </section>
 
+        {/* Email Configuration */}
+        <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>
+            <Bell size={22} color="var(--primary)" /> Cấu hình Email
+          </h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            <div>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem' }}>Tài khoản Gmail gửi mail (SMTP User)</label>
+              <input 
+                value={formData.smtpUser || ''} 
+                onChange={e => setFormData({...formData, smtpUser: e.target.value})} 
+                placeholder="Ví dụ: shopvietchi@gmail.com"
+                style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc', fontWeight: 700 }} 
+              />
+              <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.3rem' }}>Gmail dùng để gửi thông báo cho khách hàng.</p>
+            </div>
+            <div>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem' }}>Mật khẩu ứng dụng (SMTP Pass)</label>
+              <input 
+                type="password"
+                value={formData.smtpPass || ''} 
+                onChange={e => setFormData({...formData, smtpPass: e.target.value})} 
+                placeholder="Nhập mã 16 ký tự mật khẩu ứng dụng"
+                style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} 
+              />
+              <p style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '0.3rem' }}>Mật khẩu ứng dụng tạo từ bảo mật 2 lớp của Google.</p>
+            </div>
+            <div>
+              <label style={{ fontSize: '0.85rem', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '0.4rem' }}>Email nhận thông báo Admin</label>
+              <input 
+                value={formData.adminNotificationEmail || ''} 
+                onChange={e => setFormData({...formData, adminNotificationEmail: e.target.value})} 
+                placeholder="Email của chủ cửa hàng"
+                style={{ width: '100%', padding: '0.8rem', borderRadius: '12px', border: '1.5px solid #f1f5f9', background: '#f8fafc' }} 
+              />
+            </div>
+          </div>
+        </section>
+
         {/* Brand Section */}
         <section style={{ background: '#fff', padding: isMobile ? '1.5rem' : '2rem', borderRadius: '28px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#1e293b' }}>

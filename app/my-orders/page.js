@@ -3,296 +3,214 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Clock, CheckCircle2, Truck, 
-  XCircle, ChevronRight, Package, Calendar,
-  ArrowLeft, CreditCard, Search, Map
+  XCircle, ArrowLeft, Calendar, Package,
+  ChevronRight, MapPin, CreditCard, Phone
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useUser } from '@/context/UserContext';
 
-export default function MyOrdersPage() {
-  const { user, loading: authLoading } = useUser();
+const MyOrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const data = await res.json();
+          setOrders(data);
+        }
+      } catch (e) {
+        toast.error('Lỗi tải đơn hàng');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      fetchOrders();
-    } else if (!authLoading) {
-      setLoading(false);
-    }
-  }, [user, authLoading]);
-
-  const fetchOrders = async () => {
+  const handleCancel = async (orderId) => {
+    if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
     try {
-      const res = await fetch('/api/orders/my-orders');
+      const res = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status: 'CANCELLED' })
+      });
       if (res.ok) {
-        const data = await res.json();
-        setOrders(data);
+        toast.success('Đã hủy đơn hàng');
+        setOrders(orders.map(o => o._id === orderId ? { ...o, status: 'CANCELLED' } : o));
       }
     } catch (e) {
-      console.error("Lỗi tải đơn hàng");
-    } finally {
-      setLoading(false);
+      toast.error('Lỗi hủy đơn');
     }
   };
 
-  const getStatusInfo = (status = '') => {
-    const s = status.toLowerCase();
-    switch (s) {
-      case 'pending': return { label: 'Chờ xử lý', color: '#f59e0b', bg: '#fef3c7', icon: Clock };
-      case 'confirmed':
-      case 'processing': 
-      case 'preparing': return { label: 'Chuẩn bị', color: '#2563eb', bg: '#eff6ff', icon: Package };
-      case 'shipping':
-      case 'shipped': return { label: 'Đang giao', color: '#7c3aed', bg: '#f5f3ff', icon: Truck };
-      case 'delivered':
-      case 'completed':
-      case 'paid':
-      case 'success': return { label: 'Đã giao', color: '#16a34a', bg: '#f0fdf4', icon: CheckCircle2 };
-      case 'cancelled': return { label: 'Đã hủy', color: '#ef4444', bg: '#fef2f2', icon: XCircle };
-      default: return { label: status, color: '#64748b', bg: '#f1f5f9', icon: Clock };
-    }
-  };
-
-  if (authLoading || loading) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff9f5' }}>
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} style={{ width: '40px', height: '40px', border: '4px solid #ffe2cc', borderTopColor: 'var(--primary)', borderRadius: '50%' }} />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#fff9f5' }}>
-        <div style={{ padding: '100px 20px', textAlign: 'center', maxWidth: '500px', margin: '0 auto' }}>
-          <div style={{ width: '80px', height: '80px', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-            <ShoppingBag size={40} color="var(--primary)" />
-          </div>
-          <h2 style={{ fontWeight: 900, fontSize: '1.5rem', marginBottom: '1rem' }}>Bạn chưa đăng nhập</h2>
-          <p style={{ color: '#64748b', marginBottom: '2rem' }}>Vui lòng đăng nhập để xem lịch sử và trạng thái các đơn hàng của bạn.</p>
-          <Link href="/login" style={{ display: 'block', padding: '1rem', background: 'var(--gradient)', color: '#fff', borderRadius: '16px', fontWeight: 800, textDecoration: 'none', boxShadow: '0 8px 20px rgba(212,96,10,0.2)' }}>Đăng nhập ngay</Link>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#fcfcfc' }}>
+      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1 }} style={{ width: '40px', height: '40px', border: '4px solid #eee', borderTopColor: 'var(--primary)', borderRadius: '50%' }} />
+    </div>
+  );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff9f5' }}>
-      
-      <main style={{ maxWidth: '800px', margin: '0 auto', padding: isMobile ? '80px 1rem 4rem' : '120px 2rem 4rem' }}>
-        <div style={{ marginBottom: '2.5rem' }}>
-          <h1 style={{ fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 900, color: '#1e293b', letterSpacing: '-0.02em' }}>Đơn hàng của tôi</h1>
-          <p style={{ color: '#64748b', marginTop: '0.5rem' }}>Theo dõi trạng thái và lịch sử mua hàng của bạn</p>
+    <div style={{ background: '#fcfcfc', minHeight: '100vh', padding: '2rem 0' }}>
+      <div className="container" style={{ maxWidth: '850px' }}>
+        <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+           <button onClick={() => router.push('/')} style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}>
+             <ArrowLeft size={18} />
+           </button>
+           <h1 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Lịch sử mua hàng</h1>
         </div>
 
         {orders.length === 0 ? (
-          <div style={{ background: '#fff', padding: '4rem 2rem', borderRadius: '32px', textAlign: 'center', border: '1px solid #fef2e8', boxShadow: '0 20px 40px rgba(0,0,0,0.02)' }}>
-            <div style={{ width: '64px', height: '64px', background: '#f8fafc', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-              <Package size={32} color="#cbd5e1" />
-            </div>
-            <p style={{ color: '#94a3b8', fontWeight: 600 }}>Bạn chưa có đơn hàng nào.</p>
-            <Link href="/products" style={{ display: 'inline-block', marginTop: '1.5rem', color: 'var(--primary)', fontWeight: 800, textDecoration: 'none', fontSize: '0.95rem' }}>Khám phá sản phẩm ngay →</Link>
+          <div style={{ background: '#fff', padding: '3rem', borderRadius: '32px', textAlign: 'center', boxShadow: '0 15px 40px rgba(0,0,0,0.02)' }}>
+            <ShoppingBag size={64} color="#e2e8f0" style={{ marginBottom: '1.5rem' }} />
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800 }}>Hộp thư đơn hàng trống</h2>
+            <Link href="/#products" className="btn btn-primary" style={{ padding: '0.8rem 2rem', borderRadius: '14px', fontSize: '1rem', fontWeight: 800 }}>Mua sắm ngay</Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {orders.map((order, idx) => {
-              const status = getStatusInfo(order.status);
+              const statusSteps = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+              const currentStepIdx = statusSteps.indexOf(order.status);
+
               return (
                 <motion.div
+                  key={order._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  key={order._id}
-                  style={{
+                  transition={{ delay: idx * 0.05 }}
+                  style={{ 
                     background: '#fff', 
-                    borderRadius: '24px', 
-                    border: '1px solid #fef2e8',
-                    overflow: 'hidden',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
+                    borderRadius: '28px', 
+                    padding: '1.5rem',
+                    boxShadow: '0 15px 40px rgba(0,0,0,0.03)',
+                    border: '1px solid #f8fafc',
+                    position: 'relative'
                   }}
                 >
-                  {/* Order Header */}
-                  <div style={{ padding: '1.25rem', borderBottom: '1px solid #fef2e8', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {/* Order Top Info */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.85rem', alignItems: 'center' }}>
+                      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#fff', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <ShoppingBag size={20} color="var(--primary)" />
                       </div>
                       <div>
-                        <div style={{ fontWeight: 900, fontSize: '0.9rem' }}>#{order.orderCode || order._id.slice(-6).toUpperCase()}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1e293b' }}>#{order._id.slice(-6).toUpperCase()}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700 }}>{new Date(order.createdAt).toLocaleDateString('vi-VN')}</div>
                       </div>
                     </div>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem', borderRadius: '100px', background: status.bg, color: status.color, fontSize: '0.75rem', fontWeight: 800 }}>
-                      <status.icon size={12} /> {status.label}
+                    <div style={{ 
+                      padding: '0.4rem 1rem', borderRadius: '12px', 
+                      background: order.status === 'CANCELLED' ? '#fee2e2' : '#fef3c7', 
+                      color: order.status === 'CANCELLED' ? '#ef4444' : '#d4600a',
+                      fontSize: '0.7rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '0.4rem'
+                    }}>
+                      <Clock size={12} /> {order.status === 'PENDING' ? 'Chờ xử lý' : order.status === 'CANCELLED' ? 'Đã hủy' : 'Đang xử lý'}
                     </div>
                   </div>
 
-                  {/* Order Items Summary */}
-                  {/* Order Items Summary */}
-                  <div style={{ padding: '1.5rem 1.25rem' }}>
-                    {/* Visual Timeline with Moving Indicator - PROMAX REDESIGN */}
-                    <div style={{ position: 'relative', marginBottom: '6rem', padding: '0 10px', marginTop: '1rem' }}>
-                      {/* Background Line */}
-                      <div style={{ position: 'absolute', top: '20px', left: '12.5%', right: '12.5%', height: '4px', background: '#f1f5f9', borderRadius: '10px', zIndex: 0 }} />
-                      
-                      {/* Active Progress Line */}
-                      {(() => {
-                        const s = (order.status || '').toLowerCase();
-                        const orderSteps = { 
-                          'pending': 1, 
-                          'confirmed': 2, 'processing': 2, 'preparing': 2,
-                          'shipping': 3, 'shipped': 3,
-                          'delivered': 4, 'completed': 4, 'paid': 4, 'success': 4,
-                          'cancelled': 0 
-                        };
-                        const currentStep = orderSteps[s] || 0;
-                        const progressPct = currentStep > 0 ? ((currentStep - 1) / 3) * 100 : 0;
-
-                        return (
-                          <>
-                            <motion.div 
-                              initial={{ width: 0 }}
-                              animate={{ width: `${progressPct * 0.75}%` }}
-                              style={{ 
-                                position: 'absolute', top: '20px', left: '12.5%', 
-                                height: '4px', background: 'var(--gradient)', 
-                                zIndex: 0, borderRadius: '10px' 
-                              }} 
-                            />
-                            
-                            {/* Moving Product Image - HIGH END DESIGN */}
-                            {currentStep > 0 && (
-                              <motion.div
-                                initial={false}
-                                animate={{ left: `${12.5 + (progressPct * 0.75)}%` }}
-                                transition={{ type: 'spring', stiffness: 120, damping: 25 }}
-                                style={{ 
-                                  position: 'absolute', top: '75px', 
-                                  zIndex: 10, transform: 'translateX(-50%)',
-                                  pointerEvents: 'none',
-                                  display: 'flex', flexDirection: 'column', alignItems: 'center'
-                                }}
-                              >
-                                {/* Animated Pointer Arrow */}
-                                <motion.div 
-                                  animate={{ y: [0, -4, 0] }}
-                                  transition={{ repeat: Infinity, duration: 2 }}
-                                  style={{ 
-                                    width: '0', height: '0', 
-                                    borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
-                                    borderBottom: '8px solid var(--primary)',
-                                    marginBottom: '4px'
-                                  }} 
-                                />
-                                
-                                <motion.div
-                                  animate={{ scale: [1, 1.05, 1] }}
-                                  transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-                                  style={{
-                                    width: '56px', height: '56px', 
-                                    borderRadius: '16px', overflow: 'hidden', 
-                                    border: '3px solid #fff', 
-                                    boxShadow: '0 12px 25px rgba(212,96,10,0.25)',
-                                    background: 'var(--gradient)',
-                                    position: 'relative',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                  }}
-                                >
-                                  <ShoppingBag size={28} color="#fff" />
-                                </motion.div>
-                                
-                                <div style={{ 
-                                  marginTop: '0.5rem', background: 'var(--primary)', color: '#fff', 
-                                  fontSize: '0.6rem', fontWeight: 900, padding: '2px 8px', 
-                                  borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.5px',
-                                  boxShadow: '0 4px 10px rgba(212,96,10,0.2)'
-                                }}>
-                                  Hiện tại
-                                </div>
-                              </motion.div>
-                            )}
-                          </>
-                        );
-                      })()}
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
+                  {/* Visual Progress Timeline */}
+                  {order.status !== 'CANCELLED' && (
+                    <div style={{ position: 'relative', marginBottom: '3rem', padding: '0 1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 1 }}>
                         {[
-                          { key: 'pending', label: 'Đặt hàng', icon: Calendar, step: 1 },
-                          { key: 'confirmed', label: 'Chuẩn bị', icon: Package, step: 2 },
-                          { key: 'shipping', label: 'Đang giao', icon: Truck, step: 3 },
-                          { key: 'delivered', label: 'Hoàn tất', icon: CheckCircle2, step: 4 }
-                        ].map((step, sIdx) => {
-                          const s = (order.status || '').toLowerCase();
-                          const orderSteps = { 
-                            'pending': 1, 
-                            'confirmed': 2, 'processing': 2, 'preparing': 2,
-                            'shipping': 3, 'shipped': 3,
-                            'delivered': 4, 'completed': 4, 'paid': 4, 'success': 4,
-                            'cancelled': 0 
-                          };
-                          const currentStep = orderSteps[s] || 0;
-                          const isActive = currentStep >= step.step;
-                          const isCancelled = s === 'cancelled';
-
+                          { label: 'Đặt hàng', icon: <Calendar /> },
+                          { label: 'Chuẩn bị', icon: <Package /> },
+                          { label: 'Đang giao', icon: <Truck /> },
+                          { label: 'Hoàn tất', icon: <CheckCircle2 /> }
+                        ].map((s, i) => {
+                          const isDone = i <= currentStepIdx;
+                          const isCurrent = i === currentStepIdx;
                           return (
-                            <div key={step.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem', flex: 1 }}>
+                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', position: 'relative' }}>
                               <div style={{ 
-                                width: '40px', height: '40px', borderRadius: '14px', 
-                                background: isCancelled ? '#fef2f2' : (isActive ? 'var(--gradient)' : '#fff'),
-                                color: isCancelled ? '#ef4444' : (isActive ? '#fff' : '#cbd5e1'),
-                                border: isActive ? 'none' : '2px solid #f1f5f9',
+                                width: '38px', height: '38px', borderRadius: '12px', 
+                                background: isDone ? 'var(--gradient)' : '#fff',
+                                color: isDone ? '#fff' : '#cbd5e1',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: isActive ? '0 8px 15px rgba(212,96,10,0.15)' : 'none',
-                                transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)'
+                                border: isDone ? 'none' : '1px solid #f1f5f9',
+                                transition: 'all 0.3s'
                               }}>
-                                <step.icon size={20} />
+                                {React.cloneElement(s.icon, { size: 16 })}
                               </div>
-                              <span style={{ fontSize: '0.75rem', fontWeight: isActive ? 900 : 600, color: isActive ? '#1e293b' : '#94a3b8', textAlign: 'center' }}>
-                                {step.label}
-                              </span>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 800, color: isDone ? '#1e293b' : '#cbd5e1' }}>{s.label}</span>
+                              
+                              {isCurrent && (
+                                <div style={{ position: 'absolute', top: '100%', marginTop: '5px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                  <div style={{ width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderBottom: '4px solid #d4600a' }} />
+                                  <div style={{ background: '#d4600a', color: '#fff', fontSize: '0.55rem', fontWeight: 900, padding: '2px 6px', borderRadius: '5px', whiteSpace: 'nowrap' }}>
+                                    HIỆN TẠI
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem', scrollbarWidth: 'none' }}>
-                      {order.items.map((item, i) => (
-                        <div key={i} style={{ flexShrink: 0, width: '64px', height: '64px', borderRadius: '16px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
-                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      ))}
-                    </div>
-                    
-                    <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Tổng cộng ({order.items.length} món)</div>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 900, color: 'var(--primary)' }}>{order.totalAmount.toLocaleString()}đ</div>
+                      <div style={{ position: 'absolute', top: '19px', left: '45px', right: '45px', height: '1.5px', background: '#f1f5f9', zIndex: 0 }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(currentStepIdx / 3) * 100}%` }}
+                          transition={{ duration: 1.5 }}
+                          style={{ height: '100%', background: 'var(--gradient)', borderRadius: '10px' }}
+                        />
                       </div>
-                      <button 
+                    </div>
+                  )}
+
+                  {/* Horizontal Stacked Product Images */}
+                  <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '10px' }}>
+                      {order.items.map((item, i) => (
+                        <motion.div
+                          key={i}
+                          whileHover={{ y: -5, scale: 1.05, zIndex: 100 }}
+                          style={{
+                            width: '60px', height: '60px', borderRadius: '16px', border: '3px solid #fff',
+                            boxShadow: '0 8px 20px rgba(0,0,0,0.06)', overflow: 'hidden', background: '#fff',
+                            marginLeft: i === 0 ? 0 : '-25px', 
+                            zIndex: i, position: 'relative'
+                          }}
+                        >
+                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </motion.div>
+                      ))}
+                      {order.items.length > 5 && (
+                        <div style={{ marginLeft: '1rem', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: 900, color: '#64748b' }}>
+                          +{order.items.length - 5}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Summary Footer */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #f8fafc', paddingTop: '1.5rem' }}>
+                    <div>
+                      <p style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 700, margin: '0 0 0.2rem 0' }}>Tổng cộng ({order.items.length} món)</p>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 950, color: 'var(--primary)' }}>
+                        {order.totalAmount?.toLocaleString()}đ
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                       {order.status === 'PENDING' && (
+                         <button onClick={() => handleCancel(order._id)} style={{ background: 'none', border: 'none', color: '#ef4444', fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}>Hủy đơn</button>
+                       )}
+                       <button 
                         onClick={() => setSelectedOrder(order)}
                         style={{ 
-                          padding: '0.8rem 1.5rem', borderRadius: '14px', 
-                          background: 'var(--primary)', color: '#fff', 
-                          fontSize: '0.85rem', fontWeight: 800, border: 'none', cursor: 'pointer',
-                          boxShadow: '0 8px 15px rgba(212,96,10,0.2)',
-                          transition: 'transform 0.2s'
+                          padding: '0.7rem 2rem', borderRadius: '14px', background: 'var(--gradient)', color: '#fff', 
+                          fontSize: '0.9rem', fontWeight: 900, border: 'none',
+                          boxShadow: '0 8px 20px rgba(212,96,10,0.15)',
+                          display: 'inline-flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer'
                         }}
-                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                       >
-                        Chi tiết
+                        Chi tiết <ChevronRight size={16} />
                       </button>
                     </div>
                   </div>
@@ -301,98 +219,80 @@ export default function MyOrdersPage() {
             })}
           </div>
         )}
-      </main>
 
-      {/* ORDER DETAIL MODAL */}
-      <AnimatePresence>
-        {selectedOrder && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedOrder(null)}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' }} 
-            />
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              style={{ 
-                position: 'relative', background: '#fff', width: '100%', maxWidth: '500px', 
-                borderRadius: '32px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-                maxHeight: '90vh', display: 'flex', flexDirection: 'column'
-              }}
-            >
-              <div style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ fontWeight: 900, fontSize: '1.25rem' }}>Chi tiết đơn hàng</h3>
-                <button onClick={() => setSelectedOrder(null)} style={{ border: 'none', background: '#f1f5f9', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <XCircle size={20} color="#64748b" />
-                </button>
-              </div>
-              
-              <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
-                {/* Shipping Info */}
-                <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '20px', marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem', color: 'var(--primary)', fontWeight: 800, fontSize: '0.85rem' }}>
-                    <Map size={16} /> THÔNG TIN NHẬN HÀNG
-                  </div>
-                  <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.25rem' }}>{selectedOrder.shippingAddress?.fullName}</div>
-                  <div style={{ color: '#475569', fontSize: '0.9rem' }}>{selectedOrder.shippingAddress?.phone}</div>
-                  <div style={{ color: '#475569', fontSize: '0.9rem', marginTop: '0.5rem', lineHeight: 1.5 }}>
-                    {selectedOrder.shippingAddress?.address}, {selectedOrder.shippingAddress?.ward}, {selectedOrder.shippingAddress?.district}, {selectedOrder.shippingAddress?.province}
-                  </div>
-                </div>
-
-                {/* Items List */}
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '0.5px' }}>Sản phẩm đã mua</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {selectedOrder.items.map((item, i) => (
-                      <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                        <div style={{ width: '60px', height: '60px', borderRadius: '14px', overflow: 'hidden', border: '1px solid #f1f5f9', flexShrink: 0 }}>
-                          <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>{item.name}</div>
-                          <div style={{ fontSize: '0.8rem', color: '#64748b' }}>{item.quantity} x {item.price.toLocaleString()}đ</div>
-                        </div>
-                        <div style={{ fontWeight: 900, color: '#1e293b' }}>{(item.price * item.quantity).toLocaleString()}đ</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '1.5rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#64748b' }}>
-                    <span>Tạm tính</span>
-                    <span>{selectedOrder.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toLocaleString()}đ</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#64748b' }}>
-                    <span>Phí vận chuyển</span>
-                    <span>{selectedOrder.shippingFee?.toLocaleString() || '0'}đ</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
-                    <span style={{ fontWeight: 800, fontSize: '1.1rem' }}>Tổng cộng</span>
-                    <span style={{ fontWeight: 900, fontSize: '1.25rem', color: 'var(--primary)' }}>{selectedOrder.totalAmount.toLocaleString()}đ</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div style={{ padding: '1.5rem', background: '#f8fafc' }}>
-                <button 
-                  onClick={() => setSelectedOrder(null)}
-                  style={{ width: '100%', padding: '1rem', borderRadius: '16px', background: '#1e293b', color: '#fff', border: 'none', fontWeight: 800, cursor: 'pointer' }}
+        {/* Customer Detail Modal */}
+        <AnimatePresence>
+          {selectedOrder && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedOrder(null)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', zIndex: 1000 }}
+              />
+              <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, pointerEvents: 'none', padding: '1.5rem' }}>
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  style={{ background: '#fff', borderRadius: '32px', width: '100%', maxWidth: '600px', maxHeight: '90vh', overflowY: 'auto', pointerEvents: 'auto', padding: '2rem', boxShadow: '0 25px 60px rgba(0,0,0,0.1)' }}
                 >
-                  Đóng
-                </button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                    <div>
+                      <h2 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#1e293b' }}>Chi tiết đơn hàng</h2>
+                      <p style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 700 }}>Mã đơn: #{selectedOrder._id.toUpperCase()}</p>
+                    </div>
+                    <button onClick={() => setSelectedOrder(null)} style={{ background: '#f8fafc', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><XCircle size={20} /></button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {/* Products List */}
+                    <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '24px' }}>
+                      <h3 style={{ fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><ShoppingBag size={14} /> Sản phẩm</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        {selectedOrder.items.map((item, i) => (
+                          <div key={i} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                            <img src={item.image} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{item.name}</div>
+                              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.quantity} x {item.price.toLocaleString()}đ</div>
+                            </div>
+                            <div style={{ fontWeight: 800, fontSize: '0.85rem' }}>{(item.price * item.quantity).toLocaleString()}đ</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Delivery Info */}
+                    <div style={{ border: '1.5px solid #f1f5f9', padding: '1.25rem', borderRadius: '24px' }}>
+                       <h3 style={{ fontSize: '0.85rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MapPin size={14} /> Thông tin giao hàng</h3>
+                       <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem' }}>{selectedOrder.shippingAddress.fullName}</div>
+                       <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 800, marginBottom: '0.5rem' }}>{selectedOrder.shippingAddress.phone}</div>
+                       <p style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: 1.5, margin: 0 }}>
+                         {selectedOrder.shippingAddress.address}, {selectedOrder.shippingAddress.ward}, {selectedOrder.shippingAddress.city_detail}, {selectedOrder.shippingAddress.city}
+                       </p>
+                    </div>
+
+                    {/* Payment Summary */}
+                    <div style={{ background: 'var(--primary-light)', padding: '1.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--primary)', marginBottom: '0.2rem' }}>{selectedOrder.paymentMethod === 'BANK_TRANSFER' ? 'Chuyển khoản' : 'Thanh toán COD'}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 950, color: 'var(--primary)' }}>{selectedOrder.totalAmount.toLocaleString()}đ</div>
+                      </div>
+                      <div style={{ padding: '0.5rem 1rem', background: '#fff', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 900, color: '#d4600a' }}>
+                        {selectedOrder.status === 'PENDING' ? 'Đang xử lý' : selectedOrder.status === 'CANCELLED' ? 'Đã hủy' : 'Đã giao'}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
-}
+};
+
+export default MyOrdersPage;

@@ -5,9 +5,72 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, User, Bot, Loader2 } from 'lucide-react';
 import { useUser } from '@/context/UserContext';
 
+// Custom Angular (Góc cạnh) Robot with Arms and Legs
+const CuteRobot = ({ size = 40, isMobile = false, isWaving = false }) => {
+  const s = isMobile ? size * 0.8 : size;
+  return (
+    <motion.div 
+      style={{ width: s, height: s, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      animate={{ y: [0, -3, 0] }}
+      transition={{ repeat: Infinity, duration: 0.6, ease: "easeInOut" }}
+    >
+      <svg width={s} height={s} viewBox="0 0 100 100" fill="none">
+        {/* Head - Square & Angular */}
+        <rect x="30" y="15" width="40" height="35" fill="#fff" stroke="currentColor" strokeWidth="4" />
+        
+        {/* Eyes - Square */}
+        <rect x="38" y="25" width="6" height="6" fill="currentColor" />
+        <rect x="56" y="25" width="6" height="6" fill="currentColor" />
+        
+        {/* Mouth - Straight line */}
+        <line x1="42" y1="40" x2="58" y2="40" stroke="currentColor" strokeWidth="3" />
+        
+        {/* Antenna - Angular */}
+        <path d="M50 15 V5 H60" stroke="currentColor" strokeWidth="3" fill="none" />
+        <rect x="60" y="2" width="6" height="6" fill="#ef4444" />
+
+        {/* Body - Boxy */}
+        <rect x="33" y="50" width="34" height="34" fill="#fff" stroke="currentColor" strokeWidth="4" />
+        
+        {/* Left Arm - Rectangular */}
+        <motion.rect 
+          x="20" y="55" width="13" height="6" fill="currentColor" 
+          style={{ originX: '100%', originY: '50%' }}
+          animate={isWaving ? { rotate: [-20, -70, -20] } : { rotate: [-20, 20, -20] }}
+          transition={{ repeat: Infinity, duration: isWaving ? 0.3 : 0.6 }}
+        />
+        
+        {/* Right Arm - Rectangular */}
+        <motion.rect 
+          x="67" y="55" width="13" height="6" fill="currentColor" 
+          style={{ originX: '0%', originY: '50%' }}
+          animate={isWaving ? { rotate: [70, 20, 70] } : { rotate: [20, -20, 20] }}
+          transition={{ repeat: Infinity, duration: isWaving ? 0.3 : 0.6 }}
+        />
+
+        {/* Left Leg - Blocky */}
+        <motion.rect 
+          x="38" y="84" width="8" height="12" fill="currentColor" 
+          animate={{ y: [0, -6, 0] }}
+          transition={{ repeat: Infinity, duration: 0.6 }}
+        />
+
+        {/* Right Leg - Blocky */}
+        <motion.rect 
+          x="54" y="84" width="8" height="12" fill="currentColor" 
+          animate={{ y: [-6, 0, -6] }}
+          transition={{ repeat: Infinity, duration: 0.6 }}
+        />
+      </svg>
+    </motion.div>
+  );
+};
+
 export default function ChatBot() {
   const { user } = useUser();
   const [isOpen, setIsOpen] = useState(false);
+  const [isWalking, setIsWalking] = useState(true);
+  const [isHelloMode, setIsHelloMode] = useState(false);
   const [messages, setMessages] = useState([
     { role: 'model', content: 'Chào bạn! Mình là VietChi AI. Mình có thể giúp gì cho bạn trong việc lựa chọn đặc sản hôm nay nhỉ? 😊' }
   ]);
@@ -15,6 +78,26 @@ export default function ChatBot() {
   const [loading, setLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const scrollRef = useRef(null);
+
+  // Initial Entrance Animation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsWalking(false);
+    }, 8500); 
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Periodic "Hello" Mode
+  useEffect(() => {
+    if (isOpen || isWalking) return;
+
+    const interval = setInterval(() => {
+      setIsHelloMode(true);
+      setTimeout(() => setIsHelloMode(false), 3500); 
+    }, 8500); 
+    
+    return () => clearInterval(interval);
+  }, [isOpen, isWalking]);
 
   // Check for mobile
   useEffect(() => {
@@ -47,7 +130,6 @@ export default function ChatBot() {
   useEffect(() => {
     if (scrollRef.current) {
       const scrollContainer = scrollRef.current;
-      // Sử dụng setTimeout để đảm bảo DOM đã cập nhật chiều cao mới nhất
       setTimeout(() => {
         scrollContainer.scrollTo({
           top: scrollContainer.scrollHeight,
@@ -72,7 +154,7 @@ export default function ChatBot() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           messages: [...messages, userMsg],
-          user: user // Gửi thông tin user hiện tại (có thể là admin)
+          user: user 
         })
       });
       const data = await res.json();
@@ -121,19 +203,24 @@ export default function ChatBot() {
   ];
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      bottom: isMobile ? '1rem' : '2rem', 
-      right: isMobile ? '1rem' : '2rem', 
-      zIndex: 2000 
-    }}>
+    <motion.div 
+      initial={{ x: '-50vw', opacity: 1 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 8, ease: "linear" }}
+      style={{ 
+        position: 'fixed', 
+        bottom: isMobile ? '1rem' : '2rem', 
+        right: isMobile ? '1rem' : '2rem', 
+        zIndex: 2000 
+      }}
+    >
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         style={{
-          width: isMobile ? '50px' : '64px',
-          height: isMobile ? '50px' : '64px',
+          width: isMobile ? '55px' : '72px',
+          height: isMobile ? '55px' : '72px',
           borderRadius: '50%',
           background: 'var(--gradient)',
           border: 'none',
@@ -143,11 +230,45 @@ export default function ChatBot() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000
+          zIndex: 1000,
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-        {isOpen ? <X size={isMobile ? 20 : 32} /> : <MessageSquare size={isMobile ? 20 : 32} />}
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }}>
+              <X size={isMobile ? 24 : 32} />
+            </motion.div>
+          ) : (isWalking || isHelloMode) ? (
+            <CuteRobot isMobile={isMobile} size={52} isWaving={isHelloMode} />
+          ) : (
+            <motion.div key="chat-icon" initial={{ scale: 0, rotate: -45 }} animate={{ scale: 1, rotate: 0 }}>
+              <MessageSquare size={isMobile ? 26 : 36} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.button>
+
+      {/* Bubble Message when walking or waving */}
+      <AnimatePresence>
+        {(isWalking || isHelloMode) && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, x: 20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            style={{
+              position: 'absolute', right: '100%', bottom: '50%', transform: 'translateY(50%)',
+              marginRight: '15px', background: '#fff', padding: '0.6rem 1rem', borderRadius: '14px',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.08)', border: '1px solid #f1f5f9',
+              whiteSpace: 'nowrap', fontSize: '0.8rem', fontWeight: 800, color: '#1e293b'
+            }}
+          >
+            {isWalking ? 'Chờ tớ tí nhé... 🤖✨' : 'Chào bạn! 😊'}
+            <div style={{ position: 'absolute', top: '50%', right: '-6px', transform: 'translateY(-50%)', width: 0, height: 0, borderTop: '6px solid transparent', borderBottom: '6px solid transparent', borderLeft: '6px solid #fff' }} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {isOpen && (
@@ -191,7 +312,7 @@ export default function ChatBot() {
                   <Bot size={24} />
                 </div>
                 <div>
-                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', margin: 0 }}>VietChi Super AI</h4>
+                  <h4 style={{ fontSize: '1.05rem', fontWeight: 800, letterSpacing: '-0.01em', margin: 0 }}>VietChi AI Assistant</h4>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <motion.span 
                       animate={{ opacity: [1, 0.4, 1] }}
@@ -373,6 +494,6 @@ export default function ChatBot() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

@@ -8,6 +8,9 @@ const SettingsSchema = new mongoose.Schema({
   
   // Contact Info
   contactEmail: { type: String, default: 'contact@vietchi.vn' },
+  adminNotificationEmail: { type: String, default: '' }, // Mail nhận thông báo đơn hàng
+  smtpUser: { type: String, default: '' }, // Tài khoản Gmail gửi mail
+  smtpPass: { type: String, default: '' }, // Mật khẩu ứng dụng Gmail
   contactPhone: { type: String, default: '0909 123 456' },
   contactAddress: { type: String, default: 'Xã Mỹ Quý, Huyện Tháp Mười, Tỉnh Đồng Tháp' },
   googleMapsLink: { type: String, default: '' },

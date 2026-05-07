@@ -5,8 +5,20 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, default: 'user' }, // user or admin
-  address: { type: String, default: '' },
-  phone: { type: String, default: '' },
+  
+  // Thông tin giao hàng mặc định
+  shippingInfo: {
+    fullName: { type: String, default: '' },
+    phone: { type: String, default: '' },
+    province: { type: String, default: '' },
+    province_code: { type: String, default: '' },
+    district: { type: String, default: '' },
+    district_code: { type: String, default: '' },
+    ward: { type: String, default: '' },
+    ward_code: { type: String, default: '' },
+    address: { type: String, default: '' },
+  },
+  
   cart: { type: Array, default: [] },
 }, { timestamps: true });
 

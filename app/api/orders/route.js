@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Cart from '@/models/Cart';
+import User from '@/models/User';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
@@ -44,6 +45,30 @@ export async function POST(req) {
       totalAmount,
       paymentMethod,
       status: 'PENDING'
+    });
+
+    // Update User's default shipping info with this latest address
+    await User.findByIdAndUpdate(user.id, {
+      shippingInfo: {
+        fullName: shippingAddress.fullName,
+        phone: shippingAddress.phone,
+        province: shippingAddress.city,
+        province_code: shippingAddress.province_code,
+        district: shippingAddress.city_detail,
+        district_code: shippingAddress.district_code,
+        ward: shippingAddress.ward,
+        ward_code: shippingAddress.ward_code,
+        address: shippingAddress.address
+      }
+    });
+
+    // Send Email Notification to Admin (Don't wait for it to finish to avoid delaying the response)
+    import('@/models/Settings').then(async ({ default: Settings }) => {
+      const settings = await Settings.findOne().lean();
+      
+      import('@/lib/mail').then(({ sendOrderNotification }) => {
+        sendOrderNotification(newOrder, user, settings).catch(err => console.error('Email notify error:', err));
+      });
     });
 
     // Clear Cart after successful order ONLY for COD. 

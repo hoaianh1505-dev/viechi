@@ -150,7 +150,7 @@ export default function AdminLayout({ children }) {
                       gap: '1rem',
                       padding: '0.9rem 1.1rem',
                       borderRadius: '14px',
-                      background: isActive ? 'var(--primary-light)' : 'transparent',
+                      background: isActive ? 'var(--primary-light)' : 'rgba(255, 255, 255, 0)',
                       color: isActive ? 'var(--primary)' : '#64748b',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
@@ -278,7 +278,7 @@ export default function AdminLayout({ children }) {
           <Link href="/admin/shipping" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', color: pathname === '/admin/shipping' ? 'var(--primary)' : '#94a3b8', flex: 1, minWidth: 0 }}>
             <div style={{ 
               width: '32px', height: '32px', borderRadius: '10px', 
-              background: pathname === '/admin/shipping' ? 'var(--primary-light)' : 'transparent',
+              background: pathname === '/admin/shipping' ? 'var(--primary-light)' : 'rgba(255, 255, 255, 0)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: pathname === '/admin/shipping' ? 'var(--primary)' : '#94a3b8'
             }}>

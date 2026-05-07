@@ -111,9 +111,8 @@ export default function AdminDashboard() {
         const validUsers = Array.isArray(users) ? users : [];
 
         const totalSales = validOrders.reduce((acc, curr) => {
-          const isFinished = ['delivered', 'completed', 'paid', 'success'].includes(curr.status?.toLowerCase());
-          if (isFinished) {
-            // Đảm bảo lấy đúng con số, kể cả khi nó là chuỗi "500.000đ"
+          const isDelivered = curr.status === 'DELIVERED';
+          if (isDelivered) {
             const amount = typeof curr.totalAmount === 'string' 
               ? Number(curr.totalAmount.replace(/[^0-9]/g, '')) 
               : (Number(curr.totalAmount) || 0);
@@ -150,8 +149,7 @@ export default function AdminDashboard() {
     const dayRevenue = allOrders
       .filter(o => {
         const orderDate = new Date(o.createdAt);
-        const isFinished = ['delivered', 'completed', 'paid', 'success'].includes(o.status?.toLowerCase());
-        return orderDate.toDateString() === d.toDateString() && isFinished;
+        return orderDate.toDateString() === d.toDateString() && o.status === 'DELIVERED';
       })
       .reduce((acc, o) => {
         const amount = typeof o.totalAmount === 'string' 
@@ -164,11 +162,11 @@ export default function AdminDashboard() {
 
   // Order status segments for donut
   const statusMap = {
-    pending: { label: 'Chờ xử lý', color: '#f59e0b' },
-    confirmed: { label: 'Đã xác nhận', color: '#3b82f6' },
-    shipping: { label: 'Đang giao', color: '#8b5cf6' },
-    delivered: { label: 'Hoàn thành', color: '#10b981' },
-    cancelled: { label: 'Đã hủy', color: '#ef4444' },
+    PENDING: { label: 'Chờ xử lý', color: '#f59e0b' },
+    PROCESSING: { label: 'Chuẩn bị', color: '#3b82f6' },
+    SHIPPED: { label: 'Đang giao', color: '#8b5cf6' },
+    DELIVERED: { label: 'Đã giao', color: '#10b981' },
+    CANCELLED: { label: 'Đã hủy', color: '#ef4444' },
   };
   
   const orderSegments = Object.entries(statusMap).map(([key, val]) => ({
@@ -290,7 +288,7 @@ export default function AdminDashboard() {
                 whileHover={{ y: -3, background: '#f8fafc' }}
                 whileTap={{ scale: 0.95 }}
                 style={{ 
-                  background: '#fff', padding: '1rem', borderRadius: '16px', 
+                  background: '#ffffff', padding: '1rem', borderRadius: '16px', 
                   border: '1px solid #f1f5f9',
                   display: 'flex', flexDirection: 'row', 
                   alignItems: 'center', gap: '1rem',
@@ -381,7 +379,7 @@ export default function AdminDashboard() {
                 <ShoppingBag size={16} />
               </div>
               <div>
-                <p style={{ fontSize: '0.85rem', fontWeight: 800 }}>{allOrders.filter(o => o.status === 'pending').length} đơn hàng mới</p>
+                <p style={{ fontSize: '0.85rem', fontWeight: 800 }}>{allOrders.filter(o => o.status === 'PENDING').length} đơn hàng mới</p>
                 <p style={{ fontSize: '0.65rem', opacity: 0.9, fontWeight: 600 }}>Chạm để xử lý ngay</p>
               </div>
             </div>

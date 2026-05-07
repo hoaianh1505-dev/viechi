@@ -46,10 +46,27 @@ const CheckoutPage = () => {
 
   const isInitialLoad = React.useRef(true);
 
-  // Khôi phục dữ liệu từ localStorage khi load trang
+  // Khôi phục dữ liệu từ tài khoản (Autofill) hoặc localStorage
   useEffect(() => {
     const savedData = localStorage.getItem('vietchi_checkout_form');
-    if (savedData) {
+    
+    // Ưu tiên lấy từ User Profile nếu có shippingInfo
+    if (user?.shippingInfo?.phone) {
+      const info = user.shippingInfo;
+      setFormData(prev => ({
+        ...prev,
+        fullName: info.fullName || user.name || prev.fullName,
+        phone: info.phone || prev.phone,
+        address: info.address || prev.address,
+        city: info.province || prev.city,
+        province_code: info.province_code || prev.province_code,
+        city_detail: info.district || prev.city_detail,
+        district_code: info.district_code || prev.district_code,
+        ward: info.ward || prev.ward,
+        ward_code: info.ward_code || prev.ward_code,
+      }));
+    } else if (savedData) {
+      // Nếu không có trong User Profile thì mới lấy từ localStorage (khách vãng lai)
       try {
         const parsed = JSON.parse(savedData);
         setFormData(prev => ({ ...prev, ...parsed }));
@@ -57,11 +74,12 @@ const CheckoutPage = () => {
         console.error('Lỗi khôi phục form:', e);
       }
     }
-    // Đánh dấu đã xong lần đầu load sau 500ms để các effect khác không bị trigger reset
+    
+    // Đánh dấu đã xong lần đầu load
     setTimeout(() => {
       isInitialLoad.current = false;
     }, 1000);
-  }, []);
+  }, [user]);
 
   // Lưu dữ liệu vào localStorage khi formData thay đổi
   useEffect(() => {
@@ -85,8 +103,15 @@ const CheckoutPage = () => {
   useEffect(() => {
     fetch('https://provinces.open-api.vn/api/?depth=1')
       .then(res => res.json())
-      .then(data => setProvinces(data));
-  }, []);
+      .then(data => {
+        setProvinces(data);
+        // Nếu có tên city mà chưa có mã, tìm mã
+        if (formData.city && !formData.province_code) {
+          const found = data.find(p => p.name === formData.city);
+          if (found) setFormData(prev => ({ ...prev, province_code: found.code }));
+        }
+      });
+  }, [formData.city]);
 
   // Fetch Districts when Province changes
   useEffect(() => {
@@ -98,8 +123,13 @@ const CheckoutPage = () => {
       .then(res => res.json())
       .then(data => {
         setDistricts(data.districts);
+        // Nếu có tên city_detail mà chưa có mã, tìm mã
+        if (formData.city_detail && !formData.district_code) {
+          const found = data.districts.find(d => d.name === formData.city_detail);
+          if (found) setFormData(prev => ({ ...prev, district_code: found.code }));
+        }
         // Chỉ reset nếu KHÔNG PHẢI là lần đầu load trang
-        if (!isInitialLoad.current) {
+        if (!isInitialLoad.current && !formData.city_detail) {
           setFormData(prev => ({ ...prev, district_code: '', ward: '', ward_code: '', city_detail: '' }));
         }
       });
@@ -115,8 +145,13 @@ const CheckoutPage = () => {
       .then(res => res.json())
       .then(data => {
         setWards(data.wards);
+        // Nếu có tên ward mà chưa có mã, tìm mã
+        if (formData.ward && !formData.ward_code) {
+          const found = data.wards.find(w => w.name === formData.ward);
+          if (found) setFormData(prev => ({ ...prev, ward_code: found.code }));
+        }
         // Chỉ reset nếu KHÔNG PHẢI là lần đầu load trang
-        if (!isInitialLoad.current) {
+        if (!isInitialLoad.current && !formData.ward) {
           setFormData(prev => ({ ...prev, ward: '', ward_code: '' }));
         }
       });
