@@ -84,6 +84,14 @@ export default function AdminDashboard() {
   const [recentOrders, setRecentOrders] = useState([]);
   const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -157,236 +165,242 @@ export default function AdminDashboard() {
   // If no orders, show at least a placeholder
   if (orderSegments.length === 0) orderSegments.push({ label: 'Chưa có', color: '#e2e8f0', value: 1 });
 
-  const cards = [
-    { label: 'Doanh thu', value: stats.totalSales.toLocaleString() + 'đ', icon: DollarSign, color: '#10b981', bg: '#ecfdf5', trend: '+12%' },
-    { label: 'Đơn hàng', value: stats.orderCount, icon: ShoppingBag, color: '#3b82f6', bg: '#eff6ff', trend: '+5%' },
-    { label: 'Sản phẩm', value: stats.productCount, icon: Package, color: '#f59e0b', bg: '#fffbeb', trend: null },
-    { label: 'Khách hàng', value: stats.userCount, icon: Users, color: '#8b5cf6', bg: '#f5f3ff', trend: '+8%' },
+  const Settings = ({ size, color }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+  );
+
+  const Truck = ({ size, color }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-5l-4-4h-3v10h3Z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+  );
+
+  const navTiles = [
+    { label: 'Sản phẩm', icon: Package, color: '#f59e0b', bg: '#fffbeb', href: '/admin/products', desc: 'Quản lý kho hàng' },
+    { label: 'Đơn hàng', icon: ShoppingBag, color: '#3b82f6', bg: '#eff6ff', href: '/admin/orders', desc: 'Xử lý đơn giao dịch' },
+    { label: 'Phí vận chuyển', icon: Truck, color: '#10b981', bg: '#ecfdf5', href: '/admin/shipping', desc: 'Cấu hình vận chuyển' },
+    { label: 'Người dùng', icon: Users, color: '#8b5cf6', bg: '#f5f3ff', href: '/admin/users', desc: 'Danh sách khách hàng' },
+    { label: 'Cấu hình web', icon: Settings, color: '#64748b', bg: '#f8fafc', href: '/admin/settings', desc: 'Cài đặt hệ thống' },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
       {/* Header */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#1e293b' }}>Dashboard 👋</h1>
-          <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Tổng quan tình hình kinh doanh của bạn.</p>
+          <h1 style={{ fontSize: '2rem', fontWeight: 900, color: '#1e293b', letterSpacing: '-0.02em' }}>Dashboard 👋</h1>
+          <p style={{ color: '#64748b', fontSize: '0.95rem' }}>Chào mừng trở lại! Hôm nay bạn muốn quản lý gì?</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <Link href="/admin/products" style={{ 
-            padding: '0.6rem 1.2rem', borderRadius: '12px', 
-            background: 'var(--primary)', color: '#fff', 
-            fontWeight: 800, fontSize: '0.85rem', textDecoration: 'none',
-            display: 'flex', alignItems: 'center', gap: '0.4rem',
-            boxShadow: '0 4px 12px rgba(212,96,10,0.2)'
-          }}>
-            <Package size={16} /> Thêm sản phẩm
-          </Link>
-        </div>
+        <Link href="/admin/products" style={{ 
+          padding: '0.75rem 1.5rem', borderRadius: '16px', 
+          background: 'var(--gradient)', color: '#fff', 
+          fontWeight: 800, fontSize: '0.9rem', textDecoration: 'none',
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
+          boxShadow: '0 10px 20px rgba(212,96,10,0.2)'
+        }}>
+          <Package size={18} /> Thêm sản phẩm
+        </Link>
       </header>
 
-      {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
-        {cards.map((card, idx) => (
-          <motion.div 
-            key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.08 }}
-            style={{ 
-              background: '#fff', padding: '1.5rem', borderRadius: '24px', 
-              border: '1px solid #f1f5f9',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      {/* Nav Tiles Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+        {navTiles.map((tile, idx) => (
+          <Link href={tile.href} key={idx} style={{ textDecoration: 'none' }}>
+            <motion.div 
+              whileHover={{ y: -8, scale: 1.03, boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)' }}
+              whileTap={{ scale: 0.97 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              style={{ 
+                background: '#fff', padding: '2rem 1.5rem', borderRadius: '32px', 
+                border: '1px solid #fef2e8',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.02)',
+                cursor: 'pointer',
+                textAlign: 'center',
+                height: '100%'
+              }}
+            >
               <div style={{ 
-                width: '48px', height: '48px', borderRadius: '14px', 
-                background: card.bg, color: card.color, 
-                display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                width: '64px', height: '64px', borderRadius: '20px', 
+                background: tile.bg, color: tile.color, 
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: `0 10px 20px ${tile.color}15`
               }}>
-                <card.icon size={24} />
+                <tile.icon size={32} />
               </div>
               <div>
-                <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>{card.label}</p>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 900, color: '#1e293b', lineHeight: 1 }}>{card.value}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 900, color: '#1e293b', marginBottom: '0.25rem' }}>{tile.label}</h3>
+                <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600 }}>{tile.desc}</p>
               </div>
-            </div>
-            {card.trend && (
-              <div style={{ 
-                display: 'flex', alignItems: 'center', gap: '0.2rem',
-                padding: '0.25rem 0.6rem', borderRadius: '8px',
-                background: '#ecfdf5', color: '#10b981',
-                fontSize: '0.75rem', fontWeight: 800
-              }}>
-                <ArrowUpRight size={12} /> {card.trend}
-              </div>
-            )}
-          </motion.div>
+            </motion.div>
+          </Link>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem' }}>
-        {/* Revenue Bar Chart */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <BarChart3 size={18} color="var(--primary)" />
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>Doanh thu 7 ngày</h3>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Thống kê doanh thu đơn hàng đã hoàn thành</p>
-            </div>
-            <div style={{ 
-              padding: '0.3rem 0.8rem', borderRadius: '8px', 
-              background: '#f8fafc', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' 
-            }}>
-              7 ngày
-            </div>
-          </div>
-          <MiniBarChart data={last7Days} />
-        </motion.div>
-
-        {/* Order Status Donut */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
-            <PieChart size={18} color="#8b5cf6" />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>Trạng thái đơn hàng</h3>
-          </div>
-          <DonutChart segments={orderSegments} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1.5rem' }}>
-            {orderSegments.filter(s => s.label !== 'Chưa có').map((seg, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: seg.color }} />
-                  <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>{seg.label}</span>
-                </div>
-                <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e293b' }}>{seg.value}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Recent Orders + Quick Actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
-        {/* Recent Orders Table */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-        >
-          <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Đơn hàng gần đây</h3>
-            <Link href="/admin/orders" style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              Xem tất cả <ArrowRight size={14} />
-            </Link>
-          </div>
-          <div style={{ padding: '0.5rem 1rem' }}>
-            {recentOrders.length > 0 ? (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left' }}>
-                    <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>MÃ ĐƠN</th>
-                    <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>KHÁCH HÀNG</th>
-                    <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>TRẠNG THÁI</th>
-                    <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>TỔNG TIỀN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentOrders.map((order) => {
-                    const sMap = statusMap[order.status] || { label: order.status, color: '#94a3b8' };
-                    return (
-                      <tr key={order._id} style={{ borderTop: '1px solid #f8fafc' }}>
-                        <td style={{ padding: '0.9rem 0.8rem', fontWeight: 800, fontSize: '0.85rem', color: '#1e293b' }}>#{order._id.slice(-6).toUpperCase()}</td>
-                        <td style={{ padding: '0.9rem 0.8rem', fontSize: '0.85rem', color: '#64748b' }}>{order.shippingInfo?.fullName || '—'}</td>
-                        <td style={{ padding: '0.9rem 0.8rem' }}>
-                          <span style={{ 
-                            padding: '0.3rem 0.75rem', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 800,
-                            background: sMap.color + '15', color: sMap.color
-                          }}>
-                            {sMap.label}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.9rem 0.8rem', textAlign: 'right', fontWeight: 900, color: 'var(--primary)' }}>{order.totalAmount?.toLocaleString()}đ</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-                <ShoppingBag size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
-                <p style={{ fontWeight: 600 }}>Chưa có đơn hàng nào</p>
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        {/* Right Side Widgets */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* AI Insights Card */}
+      {/* Charts Row - Hidden on Mobile */}
+      {!isMobile && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem' }}>
+          {/* Revenue Bar Chart */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-            style={{ 
-              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
-              borderRadius: '28px', padding: '2rem', color: '#fff',
-              position: 'relative', overflow: 'hidden'
-            }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+            style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
           >
-            <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(212,96,10,0.15)' }} />
-            <div style={{ position: 'absolute', bottom: '-30px', left: '-10px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(59,130,246,0.1)' }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <TrendingUp size={28} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.75rem' }}>Tóm tắt nhanh</h3>
-              <p style={{ fontSize: '0.85rem', opacity: 0.8, lineHeight: 1.7 }}>
-                Bạn có <strong style={{ color: '#f59e0b' }}>{allOrders.filter(o => o.status === 'pending').length} đơn</strong> chờ xử lý
-                {allOrders.filter(o => o.status === 'shipping').length > 0 && (
-                  <> và <strong style={{ color: '#8b5cf6' }}>{allOrders.filter(o => o.status === 'shipping').length} đơn</strong> đang giao</>
-                )}.
-              </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <BarChart3 size={18} color="var(--primary)" />
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>Doanh thu 7 ngày</h3>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Thống kê doanh thu đơn hàng đã hoàn thành</p>
+              </div>
+              <div style={{ 
+                padding: '0.3rem 0.8rem', borderRadius: '8px', 
+                background: '#f8fafc', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' 
+              }}>
+                7 ngày
+              </div>
             </div>
+            <MiniBarChart data={last7Days} />
           </motion.div>
 
-          {/* Quick Links */}
+          {/* Order Status Donut */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-            style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', padding: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+            style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
           >
-            <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Clock size={16} color="var(--primary)" /> Truy cập nhanh
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              {[
-                { label: 'Quản lý đơn hàng', href: '/admin/orders', color: '#3b82f6' },
-                { label: 'Thêm sản phẩm', href: '/admin/products', color: '#f59e0b' },
-                { label: 'Cấu hình web', href: '/admin/settings', color: '#10b981' },
-                { label: 'Quản lý người dùng', href: '/admin/users', color: '#8b5cf6' },
-              ].map((item, i) => (
-                <Link key={i} href={item.href} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '0.7rem 1rem', borderRadius: '12px',
-                  background: '#f8fafc', textDecoration: 'none',
-                  transition: 'all 0.2s', border: '1px solid transparent'
-                }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = item.color + '40'; e.currentTarget.style.background = item.color + '08'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = '#f8fafc'; }}
-                >
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{item.label}</span>
-                  <ArrowRight size={14} color={item.color} />
-                </Link>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <PieChart size={18} color="#8b5cf6" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#1e293b' }}>Trạng thái đơn hàng</h3>
+            </div>
+            <DonutChart segments={orderSegments} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1.5rem' }}>
+              {orderSegments.filter(s => s.label !== 'Chưa có').map((seg, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: seg.color }} />
+                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>{seg.label}</span>
+                  </div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 800, color: '#1e293b' }}>{seg.value}</span>
+                </div>
               ))}
             </div>
           </motion.div>
         </div>
-      </div>
+      )}
+
+      {/* Recent Orders + Quick Actions - Hidden on Mobile */}
+      {!isMobile && (
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+          {/* Recent Orders Table */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+            style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+          >
+            <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800 }}>Đơn hàng gần đây</h3>
+              <Link href="/admin/orders" style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                Xem tất cả <ArrowRight size={14} />
+              </Link>
+            </div>
+            <div style={{ padding: '0.5rem 1rem' }}>
+              {recentOrders.length > 0 ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left' }}>
+                      <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>MÃ ĐƠN</th>
+                      <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>KHÁCH HÀNG</th>
+                      <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>TRẠNG THÁI</th>
+                      <th style={{ padding: '0.8rem', fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>TỔNG TIỀN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order) => {
+                      const sMap = statusMap[order.status] || { label: order.status, color: '#94a3b8' };
+                      return (
+                        <tr key={order._id} style={{ borderTop: '1px solid #f8fafc' }}>
+                          <td style={{ padding: '0.9rem 0.8rem', fontWeight: 800, fontSize: '0.85rem', color: '#1e293b' }}>#{order._id.slice(-6).toUpperCase()}</td>
+                          <td style={{ padding: '0.9rem 0.8rem', fontSize: '0.85rem', color: '#64748b' }}>{order.shippingInfo?.fullName || '—'}</td>
+                          <td style={{ padding: '0.9rem 0.8rem' }}>
+                            <span style={{ 
+                              padding: '0.3rem 0.75rem', borderRadius: '8px', fontSize: '0.7rem', fontWeight: 800,
+                              background: sMap.color + '15', color: sMap.color
+                            }}>
+                              {sMap.label}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.9rem 0.8rem', textAlign: 'right', fontWeight: 900, color: 'var(--primary)' }}>{order.totalAmount?.toLocaleString()}đ</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                  <ShoppingBag size={32} style={{ marginBottom: '0.5rem', opacity: 0.5 }} />
+                  <p style={{ fontWeight: 600 }}>Chưa có đơn hàng nào</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Right Side Widgets */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* AI Insights Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
+              style={{ 
+                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
+                borderRadius: '28px', padding: '2rem', color: '#fff',
+                position: 'relative', overflow: 'hidden'
+              }}
+            >
+              <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(212,96,10,0.15)' }} />
+              <div style={{ position: 'absolute', bottom: '-30px', left: '-10px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(59,130,246,0.1)' }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <TrendingUp size={28} style={{ marginBottom: '1rem', color: 'var(--primary)' }} />
+                <h3 style={{ fontSize: '1.15rem', fontWeight: 800, marginBottom: '0.75rem' }}>Tóm tắt nhanh</h3>
+                <p style={{ fontSize: '0.85rem', opacity: 0.8, lineHeight: 1.7 }}>
+                  Bạn có <strong style={{ color: '#f59e0b' }}>{allOrders.filter(o => o.status === 'pending').length} đơn</strong> chờ xử lý
+                  {allOrders.filter(o => o.status === 'shipping').length > 0 && (
+                    <> và <strong style={{ color: '#8b5cf6' }}>{allOrders.filter(o => o.status === 'shipping').length} đơn</strong> đang giao</>
+                  )}.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Quick Links */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
+              style={{ background: '#fff', borderRadius: '28px', border: '1px solid #f1f5f9', padding: '1.5rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+            >
+              <h4 style={{ fontWeight: 800, marginBottom: '1rem', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Clock size={16} color="var(--primary)" /> Truy cập nhanh
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {[
+                  { label: 'Quản lý đơn hàng', href: '/admin/orders', color: '#3b82f6' },
+                  { label: 'Thêm sản phẩm', href: '/admin/products', color: '#f59e0b' },
+                  { label: 'Cấu hình web', href: '/admin/settings', color: '#10b981' },
+                  { label: 'Quản lý người dùng', href: '/admin/users', color: '#8b5cf6' },
+                ].map((item, i) => (
+                  <Link key={i} href={item.href} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '0.7rem 1rem', borderRadius: '12px',
+                    background: '#f8fafc', textDecoration: 'none',
+                    transition: 'all 0.2s', border: '1px solid transparent'
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = item.color + '40'; e.currentTarget.style.background = item.color + '08'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = '#f8fafc'; }}
+                  >
+                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{item.label}</span>
+                    <ArrowRight size={14} color={item.color} />
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
