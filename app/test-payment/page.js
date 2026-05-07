@@ -83,7 +83,7 @@ export default function TestPaymentPage() {
           </button>
 
           <div style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '12px', fontSize: '0.8rem', color: '#0369a1' }}>
-            <b>Hướng dẫn:</b> Đặt một đơn hàng -> Copy 6 ký tự cuối mã đơn hàng -> Nhập vào đây kèm số tiền -> Bấm nút. Quay lại trang Checkout sẽ thấy nó tự động nhảy sang Thành công!
+            <b>Hướng dẫn:</b> Đặt một đơn hàng — Copy 6 ký tự cuối mã đơn hàng — Nhập vào đây kèm số tiền — Bấm nút. Quay lại trang Checkout sẽ thấy nó tự động nhảy sang Thành công!
           </div>
         </div>
       </div>
