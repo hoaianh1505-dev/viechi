@@ -6,11 +6,18 @@ import Cart from '@/models/Cart';
 export async function POST(req) {
   try {
     await dbConnect();
-    
     const data = await req.json();
-    const apiKey = req.headers.get('x-api-key');
+    
+    // Hỗ trợ cả x-api-key (custom) và Authorization (mặc định của SePay)
+    let apiKey = req.headers.get('x-api-key');
+    const authHeader = req.headers.get('Authorization');
+    
+    if (!apiKey && authHeader && authHeader.startsWith('Apikey ')) {
+      apiKey = authHeader.replace('Apikey ', '');
+    }
+
     console.log('--- WEBHOOK DEBUG ---');
-    console.log('Header x-api-key nhận được:', apiKey);
+    console.log('Mã bảo mật nhận được:', apiKey);
     console.log('Data nhận được:', JSON.stringify(data, null, 2));
     
     // Tạm thời tắt kiểm tra API Key để test
