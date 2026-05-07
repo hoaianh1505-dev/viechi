@@ -1,58 +1,77 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/mongodb';
+import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
+import Cart from '@/models/Cart';
+import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
+
+async function getUserFromToken() {
+  const cookieStore = cookies();
+  const token = cookieStore.get('vietchi_token')?.value;
+  if (!token) return null;
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch {
+    return null;
+  }
+}
 
 export async function POST(req) {
   try {
-    await connectDB();
-    const body = await req.json();
-    const { items, totalAmount, shippingFee, shippingInfo } = body;
-
-    // Check for user token if available
-    const token = req.cookies.get('vietchi_token')?.value;
-    let userId = null;
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decoded.id;
-      } catch (e) {}
+    await dbConnect();
+    const user = await getUserFromToken();
+    if (!user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const order = await Order.create({
-      user: userId,
+    const { shippingAddress, items, totalAmount, paymentMethod } = await req.json();
+
+    if (!items || items.length === 0) {
+      return NextResponse.json({ message: 'Giỏ hàng trống' }, { status: 400 });
+    }
+
+    // Create Order
+    const newOrder = await Order.create({
+      user: user.id,
       items,
+      shippingAddress,
       totalAmount,
-      shippingFee: shippingFee || 0,
-      shippingInfo,
-      status: 'pending',
-      paymentMethod: 'COD'
+      paymentMethod,
+      status: 'PENDING'
     });
 
-    return NextResponse.json({ message: 'Đặt hàng thành công', orderId: order._id });
+    // Clear Cart after successful order
+    await Cart.findOneAndUpdate(
+      { user: user.id },
+      { items: [], updatedAt: Date.now() }
+    );
+
+    return NextResponse.json({ 
+      message: 'Đặt hàng thành công!', 
+      orderId: newOrder._id 
+    }, { status: 201 });
+
   } catch (error) {
-    console.error('Lỗi tạo đơn hàng:', error);
-    return NextResponse.json({ error: 'Lỗi server' }, { status: 500 });
+    console.error('Order Error:', error);
+    return NextResponse.json({ message: 'Lỗi hệ thống khi đặt hàng' }, { status: 500 });
   }
 }
 
 export async function GET(req) {
   try {
-    await connectDB();
-    const token = req.cookies.get('vietchi_token')?.value;
-    if (!token) return NextResponse.json({ error: 'Chưa đăng nhập' }, { status: 401 });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    let orders;
-    if (decoded.role === 'admin') {
-      orders = await Order.find().sort({ createdAt: -1 });
-    } else {
-      orders = await Order.find({ user: decoded.id }).sort({ createdAt: -1 });
+    await dbConnect();
+    const user = await getUserFromToken();
+    if (!user) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
+    // Get user's orders, sorted by newest first
+    const orders = await Order.find({ user: user.id }).sort({ createdAt: -1 });
+    
     return NextResponse.json(orders);
   } catch (error) {
-    return NextResponse.json({ error: 'Lỗi server' }, { status: 500 });
+    return NextResponse.json({ message: 'Lỗi khi tải đơn hàng' }, { status: 500 });
   }
 }
