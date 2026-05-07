@@ -223,12 +223,12 @@ const CheckoutPage = () => {
               clearCart();
               localStorage.removeItem('vietchi_checkout_form');
               
-              toast.success('Xác nhận đã nhận được thanh toán!', { icon: '💰', duration: 5000 });
+              toast.success('Xác nhận đã nhận được thanh toán!', { icon: '💰', duration: 2000 });
               
-              // Tự động chuyển hướng về trang chủ sau 5 giây
+              // Tự động chuyển hướng về trang chủ sau 2 giây
               setTimeout(() => {
                 router.push('/');
-              }, 5000);
+              }, 2000);
             }
           }
         } catch (e) {

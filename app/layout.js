@@ -16,7 +16,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="vi" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <Toaster position="top-center" reverseOrder={false} />
+        <Toaster 
+          position="top-center" 
+          reverseOrder={false} 
+          toastOptions={{
+            duration: 2000,
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+          }}
+        />
         <UserProvider>
           <SettingsProvider>
             <ProductProvider>
